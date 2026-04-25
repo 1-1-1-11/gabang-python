@@ -1,7 +1,7 @@
 # Task 8 审查报告: 任务台账与路线图重对齐
 
 **分支**: `task/08-ledger-realignment`
-**Commit**: 待实现提交后填写
+**Commit**: `58a8782` docs: 重对齐任务台账与路线图
 **审查时间**: 待 Claude Code 填写
 **审查者**: Claude Code
 
