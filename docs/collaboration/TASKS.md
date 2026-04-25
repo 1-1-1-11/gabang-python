@@ -21,7 +21,7 @@
 
 | 任务 | 分支 | Worktree | 状态 | 实现 Commit | 审查文件 | 合并状态 |
 | --- | --- | --- | --- | --- | --- | --- |
-| Task 8: 任务台账与路线图重对齐 | `task/08-ledger-realignment` | `.worktrees/08-ledger-realignment` | 已实现待审查 | `58a8782` | `docs/collaboration/reviews/08-ledger-realignment.md` | 未合并 |
+| Task 8: 任务台账与路线图重对齐 | `task/08-ledger-realignment` | `.worktrees/08-ledger-realignment` | 已完成 | `58a8782` / `466f2aa` | `docs/collaboration/reviews/08-ledger-realignment.md` | 已合并 |
 | Task 9: 一键启动与文档 | `task/09-dev-scripts-docs` | `.worktrees/09-dev-scripts-docs` | 未开始 | - | `docs/collaboration/reviews/09-dev-scripts-docs.md` | 未合并 |
 | Task 10: API 合同与文档稳定 | `task/10-api-contract-docs` | `.worktrees/10-api-contract-docs` | 未开始 | - | `docs/collaboration/reviews/10-api-contract-docs.md` | 未合并 |
 | Task 11: 全新前端项目骨架 | `task/11-new-frontend-skeleton` | `.worktrees/11-new-frontend-skeleton` | 未开始 | - | `docs/collaboration/reviews/11-new-frontend-skeleton.md` | 未合并 |
