@@ -2,7 +2,7 @@
 
 **分支**: `task/08-ledger-realignment`
 **Commit**: `58a8782` docs: 重对齐任务台账与路线图
-**审查时间**: 待 Claude Code 填写
+**审查时间**: 2026-04-25
 **审查者**: Claude Code
 
 ---
@@ -26,22 +26,24 @@
 
 ## Blocker
 
-待 Claude Code 审查。
+无可执行记录。用户已确认 Claude 审查完毕，仓库内未发现额外审查正文。
 
 ## Major
 
-待 Claude Code 审查。
+无可执行记录。用户已确认 Claude 审查完毕，仓库内未发现额外审查正文。
 
 ## Minor
 
-待 Claude Code 审查。
+无可执行记录。
 
 ## Question
 
-待 Claude Code 审查。
+无可执行记录。
 
 ---
 
 ## Codex 处理记录
 
-待 Claude Code 审查结束后填写。
+- 已核对主工作区和 Task 8 worktree，未发现 Claude 额外写入的 Task 8 审查正文。
+- 根据用户消息“审查完毕，任务继续”，本轮没有需要处理的 Blocker/Major 明细。
+- 维持 Task 8 文档重对齐实现，并进入合并流程。
