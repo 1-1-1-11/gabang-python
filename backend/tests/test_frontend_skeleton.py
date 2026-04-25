@@ -1,0 +1,66 @@
+from html.parser import HTMLParser
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+FRONTEND = ROOT / "frontend"
+
+
+class ElementCollector(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.elements: list[tuple[str, dict[str, str | None]]] = []
+
+    def handle_starttag(self, tag, attrs):
+        self.elements.append((tag, dict(attrs)))
+
+
+def parse_index() -> ElementCollector:
+    parser = ElementCollector()
+    parser.feed((FRONTEND / "index.html").read_text(encoding="utf-8"))
+    return parser
+
+
+def test_frontend_uses_new_static_directory_only():
+    forbidden_paths = [
+        ROOT / "src",
+        ROOT / "public",
+        ROOT / "images",
+        ROOT / "package.json",
+        ROOT / "package-lock.json",
+        ROOT / "config-overrides.js",
+        ROOT / "vue.config.js",
+        ROOT / ".eslintignore",
+    ]
+
+    assert FRONTEND.is_dir()
+    assert all(not path.exists() for path in forbidden_paths)
+
+
+def test_frontend_index_wires_css_js_and_app_shell():
+    parser = parse_index()
+    links = [attrs for tag, attrs in parser.elements if tag == "link"]
+    scripts = [attrs for tag, attrs in parser.elements if tag == "script"]
+    ids = {attrs.get("id") for _, attrs in parser.elements if attrs.get("id")}
+
+    assert any(link.get("href") == "styles.css" for link in links)
+    assert any(script.get("src") == "app.js" and script.get("type") == "module" for script in scripts)
+    assert {"app", "board", "status", "move-list"}.issubset(ids)
+
+
+def test_frontend_assets_define_board_and_api_placeholders():
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    css = (FRONTEND / "styles.css").read_text(encoding="utf-8")
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert 'data-api-base="http://127.0.0.1:8000"' in html
+    assert "--board-size: 15" in css
+    assert "grid-template-columns: repeat(var(--board-size), 1fr)" in css
+    assert "const BOARD_SIZE = 15" in js
+    assert "renderBoard" in js
+
+
+def test_frontend_skeleton_does_not_call_game_api_yet():
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert "fetch(" not in js

@@ -20,6 +20,7 @@
 - FastAPI 游戏会话接口
 - Python 开发服务器启动入口
 - OpenAPI response model 和错误响应说明
+- 全新静态前端骨架
 
 ## 环境准备
 
@@ -57,6 +58,16 @@ http://127.0.0.1:8000/openapi.json
 ```
 
 OpenAPI 中的游戏接口统一返回 `GameSnapshot`。错误响应使用 `ErrorResponse`，字段为 `detail`。`best_path` 表示 AI 搜索主变路线，格式是若干 `[row, column]` 坐标。
+
+## 查看前端骨架
+
+当前前端位于 `frontend/`，是从零创建的静态 HTML/CSS/JS 骨架，不依赖 Node 构建工具，也不复用原始 JS 项目文件。
+
+```powershell
+Start-Process .\frontend\index.html
+```
+
+Task 11 只提供应用壳、棋盘、状态区和控制区。真正接入 `POST /api/games/*` 会在 Task 12 完成。
 
 ## 运行测试
 
@@ -104,6 +115,10 @@ docs/
     CLAUDE_REVIEW_PROMPT.md
     reviews/
 pyproject.toml
+frontend/
+  index.html
+  styles.css
+  app.js
 ```
 
 ## 协作流程
@@ -125,4 +140,4 @@ task/<编号>-<名称>
 
 ## 原始项目说明
 
-原始 JavaScript 项目的 README 和源码只允许保留在本地忽略目录，不作为 GitHub 远程内容提交。远程仓库的根 README 只描述当前重构版项目。
+原始 JavaScript 项目的 README 和源码只允许保留在本地忽略目录，不作为 GitHub 远程内容提交。远程仓库的根 README 只描述当前重构版项目。后续新增的前端代码必须是全新代码，不得复制、迁移或改名提交原始 JS 项目文件。
