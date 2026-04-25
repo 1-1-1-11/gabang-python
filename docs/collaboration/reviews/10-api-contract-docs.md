@@ -1,7 +1,7 @@
 # Task 10 审查报告: API 合同与文档稳定
 
 **分支**: `task/10-api-contract-docs`
-**Commit**: 待实现提交后填写
+**Commit**: `9cb1718` feat: 稳定游戏 API 合同文档
 **审查时间**: 待 Claude Code 填写
 **审查者**: Claude Code
 
