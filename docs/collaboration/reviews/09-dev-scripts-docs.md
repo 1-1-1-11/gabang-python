@@ -1,7 +1,7 @@
 # Task 9 审查报告: 一键启动与文档
 
 **分支**: `task/09-dev-scripts-docs`
-**Commit**: 待实现提交后填写
+**Commit**: `b8e302e` docs: 补充 Python 重构运行说明
 **审查时间**: 待 Claude Code 填写
 **审查者**: Claude Code
 
