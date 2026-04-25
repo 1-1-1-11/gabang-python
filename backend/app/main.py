@@ -1,39 +1,60 @@
 from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Path
-from pydantic import BaseModel, Field
 
 from backend.app.game import create_session, get_session, play_ai_move, remove_session, snapshot
+from backend.app.schemas import GAME_ERROR_RESPONSES, GameSnapshot, HealthResponse, MoveRequest, StartGameRequest
 
 app = FastAPI(title="gobang-python")
 
 
-class StartGameRequest(BaseModel):
-    size: int = Field(default=15, ge=5, le=25)
-    ai_first: bool = False
-    depth: int = Field(default=4, ge=1, le=8)
-
-
-class MoveRequest(BaseModel):
-    position: tuple[int, int]
-    depth: int | None = Field(default=None, ge=1, le=8)
-
-
-@app.get("/api/health", tags=["system"])
-def health_check() -> dict[str, str]:
+@app.get("/api/health", tags=["system"], response_model=HealthResponse)
+def health_check() -> HealthResponse:
     """Return service health status."""
-    return {"status": "ok"}
+    return HealthResponse(status="ok")
 
 
-@app.post("/api/games/start", tags=["games"])
-def start_game(request: StartGameRequest) -> dict:
+@app.post(
+    "/api/games/start",
+    tags=["games"],
+    response_model=GameSnapshot,
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "human_first": {"summary": "Human moves first", "value": {"size": 15, "ai_first": False, "depth": 4}},
+                        "ai_first": {"summary": "AI moves first", "value": {"size": 15, "ai_first": True, "depth": 4}},
+                    }
+                }
+            }
+        }
+    },
+)
+def start_game(request: StartGameRequest) -> GameSnapshot:
     """Create an in-memory game session."""
     session_id, session = create_session(request.size, request.ai_first, request.depth)
     return snapshot(session_id, session)
 
 
-@app.post("/api/games/{session_id}/move", tags=["games"])
-def make_move(session_id: Annotated[str, Path(min_length=1)], request: MoveRequest) -> dict:
+@app.post(
+    "/api/games/{session_id}/move",
+    tags=["games"],
+    response_model=GameSnapshot,
+    responses=GAME_ERROR_RESPONSES,
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "center_move": {"summary": "Place a stone near center", "value": {"position": [7, 7], "depth": 4}}
+                    }
+                }
+            }
+        }
+    },
+)
+def make_move(session_id: Annotated[str, Path(min_length=1)], request: MoveRequest) -> GameSnapshot:
     """Apply the player move and, if possible, an AI reply."""
     session = get_session(session_id)
     if session is None:
@@ -52,8 +73,13 @@ def make_move(session_id: Annotated[str, Path(min_length=1)], request: MoveReque
     return snapshot(session_id, session)
 
 
-@app.post("/api/games/{session_id}/undo", tags=["games"])
-def undo_move(session_id: Annotated[str, Path(min_length=1)]) -> dict:
+@app.post(
+    "/api/games/{session_id}/undo",
+    tags=["games"],
+    response_model=GameSnapshot,
+    responses={404: GAME_ERROR_RESPONSES[404]},
+)
+def undo_move(session_id: Annotated[str, Path(min_length=1)]) -> GameSnapshot:
     """Undo the latest player and AI moves when present."""
     session = get_session(session_id)
     if session is None:
@@ -67,8 +93,13 @@ def undo_move(session_id: Annotated[str, Path(min_length=1)]) -> dict:
     return snapshot(session_id, session)
 
 
-@app.post("/api/games/{session_id}/end", tags=["games"])
-def end_game(session_id: Annotated[str, Path(min_length=1)]) -> dict:
+@app.post(
+    "/api/games/{session_id}/end",
+    tags=["games"],
+    response_model=GameSnapshot,
+    responses={404: GAME_ERROR_RESPONSES[404]},
+)
+def end_game(session_id: Annotated[str, Path(min_length=1)]) -> GameSnapshot:
     """Return the final snapshot and remove the in-memory session."""
     session = get_session(session_id)
     if session is None:

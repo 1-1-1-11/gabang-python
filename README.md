@@ -19,6 +19,7 @@
 - AI 评分与搜索
 - FastAPI 游戏会话接口
 - Python 开发服务器启动入口
+- OpenAPI response model 和错误响应说明
 
 ## 环境准备
 
@@ -55,6 +56,8 @@ http://127.0.0.1:8000/docs
 http://127.0.0.1:8000/openapi.json
 ```
 
+OpenAPI 中的游戏接口统一返回 `GameSnapshot`。错误响应使用 `ErrorResponse`，字段为 `detail`。`best_path` 表示 AI 搜索主变路线，格式是若干 `[row, column]` 坐标。
+
 ## 运行测试
 
 ```powershell
@@ -86,12 +89,14 @@ backend/
     main.py
     board.py
     game.py
+    schemas.py
     minmax.py
   tests/
     test_health.py
     test_board.py
     test_ai_search.py
     test_game_api.py
+    test_api_contract.py
     test_dev_server.py
 docs/
   collaboration/
