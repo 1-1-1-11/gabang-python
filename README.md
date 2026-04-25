@@ -4,26 +4,78 @@
 
 ## 目标
 
-本仓库正在把原 React + Web Worker 五子棋项目重构为 Python 版五子棋项目。
+本仓库正在把原 React + Web Worker 五子棋项目重构为 Python 后端优先的五子棋项目。
 
 - FastAPI 后端：承载棋盘规则、AI 搜索、会话管理
 - Python 测试：用 pytest 覆盖棋盘规则、评分、搜索和 API 行为
+- 后续前端：允许从零创建全新 JS 前端，但不得复用、迁移或复制原始 JS 项目文件
 
-远程仓库只保存 Python 重构版代码、测试和相关文档。原始 JavaScript 源码、React 静态资源、旧 JS 测试和 Node 构建配置不进入 GitHub。
+远程仓库当前只保存 Python 重构版代码、测试和相关文档。原始 JavaScript 源码、React 静态资源、旧 JS 测试、原始 README 和 Node 构建配置不进入 GitHub。
 
-当前阶段已完成：
+## 当前能力
 
-- FastAPI 后端骨架
 - `GET /api/health`
-- Python 棋盘规则迁移
-- 棋盘规则测试
-- AI 评分与搜索迁移
+- Python 棋盘规则
+- AI 评分与搜索
 - FastAPI 游戏会话接口
+- Python 开发服务器启动入口
 
-## 当前验证
+## 环境准备
+
+建议使用 Python 3.12 或 3.13。在当前 Windows 环境中使用 `py` 命令。
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+py -m pip install -r backend\requirements.lock.txt
+```
+
+## 启动后端
+
+```powershell
+py -m backend.dev_server --reload
+```
+
+默认地址：
+
+```text
+http://127.0.0.1:8000
+```
+
+可选参数：
+
+```powershell
+py -m backend.dev_server --host 0.0.0.0 --port 9000 --reload
+```
+
+FastAPI 自动文档：
+
+```text
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/openapi.json
+```
+
+## 运行测试
 
 ```powershell
 py -m pytest backend\tests -q
+```
+
+## API 概览
+
+- `GET /api/health`
+- `POST /api/games/start`
+- `POST /api/games/{session_id}/move`
+- `POST /api/games/{session_id}/undo`
+- `POST /api/games/{session_id}/end`
+
+示例：
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8000/api/games/start `
+  -ContentType application/json `
+  -Body '{"size":15,"ai_first":false,"depth":4}'
 ```
 
 ## 当前结构
@@ -40,6 +92,7 @@ backend/
     test_board.py
     test_ai_search.py
     test_game_api.py
+    test_dev_server.py
 docs/
   collaboration/
     TASKS.md
@@ -50,7 +103,7 @@ pyproject.toml
 
 ## 协作流程
 
-每个任务使用独立分支和 worktree：
+每个有效任务使用独立分支和 worktree：
 
 ```text
 task/<编号>-<名称>
@@ -67,4 +120,4 @@ task/<编号>-<名称>
 
 ## 原始项目说明
 
-原始 JavaScript 项目的 README 和源码只允许保留在本地忽略目录，不作为 GitHub 远程内容提交。远程仓库的根 README 只描述 Python 重构版。
+原始 JavaScript 项目的 README 和源码只允许保留在本地忽略目录，不作为 GitHub 远程内容提交。远程仓库的根 README 只描述当前重构版项目。
