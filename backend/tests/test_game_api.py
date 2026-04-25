@@ -1,6 +1,15 @@
 from fastapi.testclient import TestClient
+import pytest
 
+from backend.app.game import MAX_SESSIONS, get_session, sessions
 from backend.app.main import app
+
+
+@pytest.fixture(autouse=True)
+def clear_sessions():
+    sessions.clear()
+    yield
+    sessions.clear()
 
 
 def test_start_creates_empty_game_session():
@@ -65,6 +74,19 @@ def test_undo_reverts_player_and_ai_moves():
     assert all(cell == 0 for row in payload["board"] for cell in row)
 
 
+def test_undo_reverts_single_ai_first_move():
+    client = TestClient(app)
+    session_id = client.post("/api/games/start", json={"size": 6, "ai_first": True, "depth": 1}).json()["session_id"]
+
+    response = client.post(f"/api/games/{session_id}/undo")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["history"] == []
+    assert payload["current_player"] == 1
+    assert all(cell == 0 for row in payload["board"] for cell in row)
+
+
 def test_end_releases_game_session():
     client = TestClient(app)
     session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]
@@ -87,3 +109,27 @@ def test_move_rejects_unknown_session_and_occupied_position():
     occupied = client.post(f"/api/games/{session_id}/move", json={"position": [2, 2], "depth": 1})
 
     assert occupied.status_code == 400
+
+
+def test_move_rejects_finished_game():
+    client = TestClient(app)
+    session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]
+    session = get_session(session_id)
+    assert session is not None
+    for i, j in [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2], [0, 3], [1, 3], [0, 4]]:
+        session.board.put(i, j)
+
+    response = client.post(f"/api/games/{session_id}/move", json={"position": [2, 2], "depth": 1})
+
+    assert response.status_code == 400
+
+
+def test_start_evicts_oldest_session_when_limit_is_reached():
+    client = TestClient(app)
+    first_session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]
+
+    for _ in range(MAX_SESSIONS):
+        client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1})
+
+    assert first_session_id not in sessions
+    assert len(sessions) == MAX_SESSIONS

@@ -39,8 +39,11 @@ def make_move(session_id: Annotated[str, Path(min_length=1)], request: MoveReque
     if session is None:
         raise HTTPException(status_code=404, detail="Game session not found.")
 
-    i, j = request.position
     board = session.board
+    if board.is_game_over():
+        raise HTTPException(status_code=400, detail="Game is already over.")
+
+    i, j = request.position
     if not board.put(i, j, board.current_player):
         raise HTTPException(status_code=400, detail="Invalid move.")
 
@@ -56,8 +59,8 @@ def undo_move(session_id: Annotated[str, Path(min_length=1)]) -> dict:
     if session is None:
         raise HTTPException(status_code=404, detail="Game session not found.")
 
-    session.board.undo()
-    session.board.undo()
+    for _ in range(min(2, len(session.board.history))):
+        session.board.undo()
     session.last_score = session.board.evaluate(session.board.current_player)
     session.last_best_path = []
     session.last_current_depth = 0
@@ -67,7 +70,9 @@ def undo_move(session_id: Annotated[str, Path(min_length=1)]) -> dict:
 @app.post("/api/games/{session_id}/end", tags=["games"])
 def end_game(session_id: Annotated[str, Path(min_length=1)]) -> dict:
     """Return the final snapshot and remove the in-memory session."""
-    session = remove_session(session_id)
+    session = get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Game session not found.")
-    return snapshot(session_id, session)
+    response = snapshot(session_id, session)
+    remove_session(session_id)
+    return response

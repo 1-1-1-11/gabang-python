@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from uuid import uuid4
 
 from backend.app.board import Board
@@ -11,16 +11,20 @@ class GameSession:
     ai_first: bool
     depth: int
     last_score: int = 0
-    last_best_path: list[list[int]] | None = None
+    last_best_path: list[list[int]] = field(default_factory=list)
     last_current_depth: int = 0
 
 
+MAX_SESSIONS = 256
 sessions: dict[str, GameSession] = {}
 
 
 def create_session(size: int, ai_first: bool, depth: int) -> tuple[str, GameSession]:
+    if len(sessions) >= MAX_SESSIONS:
+        sessions.pop(next(iter(sessions)))
+
     session_id = str(uuid4())
-    session = GameSession(board=Board(size=size), ai_first=ai_first, depth=depth, last_best_path=[])
+    session = GameSession(board=Board(size=size), ai_first=ai_first, depth=depth)
     sessions[session_id] = session
     if ai_first:
         play_ai_move(session, depth)
