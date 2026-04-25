@@ -1,0 +1,36 @@
+.DS_Store
+.claude/
+.spec-workflow/
+node_modules
+/dist
+.worktrees/
+__pycache__/
+*.py[cod]
+docs/legacy/
+/src/
+/public/
+/images/
+/tests/
+/package.json
+/package-lock.json
+/config-overrides.js
+/vue.config.js
+/.eslintignore
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*

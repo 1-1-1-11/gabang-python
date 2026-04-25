@@ -1,0 +1,5 @@
+# Direct runtime and test dependencies pinned for Task 2 bootstrap.
+fastapi==0.135.3
+httpx==0.28.1
+pytest==9.0.3
+uvicorn==0.38.0
