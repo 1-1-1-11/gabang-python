@@ -17,6 +17,8 @@
 - `GET /api/health`
 - Python 棋盘规则迁移
 - 棋盘规则测试
+- AI 评分与搜索迁移
+- FastAPI 游戏会话接口
 
 ## 当前验证
 
@@ -31,9 +33,13 @@ backend/
   app/
     main.py
     board.py
+    game.py
+    minmax.py
   tests/
     test_health.py
     test_board.py
+    test_ai_search.py
+    test_game_api.py
 docs/
   collaboration/
     TASKS.md
