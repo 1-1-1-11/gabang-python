@@ -1,7 +1,7 @@
 # Task 13 审查报告: 运行时边界硬化
 
 **分支**: `task/13-runtime-hardening`
-**Commit**: 待实现提交后填写
+**Commit**: `7912523` fix: 强化运行时边界
 **审查时间**: 待 Claude Code 填写
 **审查者**: Claude Code
 
