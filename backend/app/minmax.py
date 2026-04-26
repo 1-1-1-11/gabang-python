@@ -7,7 +7,7 @@ cache_hits = {"search": 0, "total": 0, "hit": 0}
 _cache = Cache()
 
 
-def minmax(board, role: int, depth: int = 4, enable_vct: bool = True):
+def minmax(board, role: int, depth: int = 4):
     return _search(board, role, depth, 0, [], -MAX, MAX)
 
 
