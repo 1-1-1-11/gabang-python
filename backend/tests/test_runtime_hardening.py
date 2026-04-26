@@ -85,6 +85,18 @@ def test_cors_origins_are_configurable(monkeypatch):
     assert get_cors_origins() == ["https://gobang.example", "http://localhost:5173"]
 
 
+def test_cors_origins_default_to_wildcard(monkeypatch):
+    monkeypatch.delenv("GOBANG_CORS_ORIGINS", raising=False)
+
+    assert get_cors_origins() == ["*"]
+
+
+def test_cors_origins_blank_value_falls_back_to_wildcard(monkeypatch):
+    monkeypatch.setenv("GOBANG_CORS_ORIGINS", " ,  ")
+
+    assert get_cors_origins() == ["*"]
+
+
 def test_move_rejects_negative_and_out_of_board_coordinates():
     client = TestClient(app)
     session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]

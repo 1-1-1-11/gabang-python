@@ -98,6 +98,68 @@ def test_end_releases_game_session():
     assert client.post(f"/api/games/{session_id}/undo").status_code == 404
 
 
+def test_unknown_session_operations_return_not_found():
+    client = TestClient(app)
+
+    assert client.post("/api/games/not-found/move", json={"position": [2, 2], "depth": 1}).status_code == 404
+    assert client.post("/api/games/not-found/undo").status_code == 404
+    assert client.post("/api/games/not-found/end").status_code == 404
+
+
+def test_operations_after_end_return_not_found():
+    client = TestClient(app)
+    session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]
+
+    assert client.post(f"/api/games/{session_id}/end").status_code == 200
+
+    assert client.post(f"/api/games/{session_id}/move", json={"position": [2, 2], "depth": 1}).status_code == 404
+    assert client.post(f"/api/games/{session_id}/undo").status_code == 404
+    assert client.post(f"/api/games/{session_id}/end").status_code == 404
+
+
+def test_invalid_move_does_not_mutate_existing_session():
+    client = TestClient(app)
+    session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]
+    before = get_session(session_id)
+    assert before is not None
+    before_board = [row.copy() for row in before.board.board]
+    before_history = [move.copy() for move in before.board.history]
+    before_hash = before.board.hash()
+    before_current_player = before.board.current_player
+
+    response = client.post(f"/api/games/{session_id}/move", json={"position": [6, 2], "depth": 1})
+
+    after = get_session(session_id)
+    assert response.status_code == 400
+    assert after is before
+    assert after.board.board == before_board
+    assert after.board.history == before_history
+    assert after.board.hash() == before_hash
+    assert after.board.current_player == before_current_player
+
+
+def test_occupied_move_does_not_mutate_existing_session():
+    client = TestClient(app)
+    session_id = client.post("/api/games/start", json={"size": 6, "ai_first": False, "depth": 1}).json()["session_id"]
+    session = get_session(session_id)
+    assert session is not None
+    session.board.put(2, 2, session.board.current_player)
+    before_board = [row.copy() for row in session.board.board]
+    before_history = [move.copy() for move in session.board.history]
+    before_hash = session.board.hash()
+    before_current_player = session.board.current_player
+
+    response = client.post(f"/api/games/{session_id}/move", json={"position": [2, 2], "depth": 1})
+
+    after = get_session(session_id)
+    assert response.status_code == 400
+    assert after is session
+    assert after.board.board == before_board
+    assert after.board.history == before_history
+    assert after.board.hash() == before_hash
+    assert after.board.current_player == before_current_player
+
+
 def test_move_rejects_unknown_session_and_occupied_position():
     client = TestClient(app)
 

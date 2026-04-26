@@ -65,6 +65,15 @@ $env:GOBANG_CORS_ORIGINS="https://gobang.example"
 py -m backend.dev_server
 ```
 
+也可以同时允许多个来源：
+
+```powershell
+$env:GOBANG_CORS_ORIGINS="https://gobang.example,https://admin.gobang.example"
+py -m backend.dev_server
+```
+
+如果未设置 `GOBANG_CORS_ORIGINS`，或变量内容为空白，服务会回退为 `*`。生产环境不要使用 `*`，应只填写实际前端域名。该环境变量在后端进程启动时读取，修改后需要重启服务才会生效。
+
 FastAPI 自动文档：
 
 ```text
@@ -73,6 +82,14 @@ http://127.0.0.1:8000/openapi.json
 ```
 
 OpenAPI 中的游戏接口统一返回 `GameSnapshot`。错误响应使用 `ErrorResponse`，字段为 `detail`。`best_path` 表示 AI 搜索主变路线，格式是若干 `[row, column]` 坐标。
+
+## 运行时边界
+
+后端当前使用进程内内存保存游戏会话。`SessionStore` 默认最多保留 256 个会话，单个会话 TTL 为 1 小时；达到容量上限时会淘汰最早创建的会话，过期会话会在读取或创建新会话时清理。服务重启会丢失全部棋局，多进程或多实例部署也不会共享会话。
+
+游戏 API 的单个会话操作会串行化，避免同一会话内并发落子互相覆盖。这个锁只存在于当前 Python 进程内，不适合直接扩展到多进程生产会话。
+
+`py -m backend.dev_server --reload` 只用于本地开发；部署时不要使用 `--reload`，并且需要显式设置 `GOBANG_CORS_ORIGINS`。如果要支撑长期或多实例运行，需要先引入外部会话存储。
 
 ## 查看前端骨架
 
@@ -137,6 +154,34 @@ py -m pytest backend\tests\test_game_api.py::test_move_places_player_move_and_ai
 7. 点击“悔棋”，确认最近一轮玩家与 AI 落子被撤销；无落子记录时“悔棋”按钮应禁用。
 8. 点击“结束”，确认状态变为“已结束”，棋盘格和“结束”按钮禁用。
 9. 刷新页面或重新打开前端后，可以重新开始一局。
+
+## 最小部署验收清单
+
+部署或演示前至少完成以下检查：
+
+1. 安装依赖并运行全量测试：
+
+   ```powershell
+   py -m pip install -r backend\requirements.lock.txt
+   py -m pytest backend\tests -q
+   ```
+
+2. 设置生产前端来源，不使用默认 `*`：
+
+   ```powershell
+   $env:GOBANG_CORS_ORIGINS="https://gobang.example"
+   ```
+
+3. 启动后端，不使用开发热重载：
+
+   ```powershell
+   py -m backend.dev_server --host 0.0.0.0 --port 8000
+   ```
+
+4. 访问 `http://127.0.0.1:8000/api/health`，确认返回 `{"status":"ok"}`。
+5. 访问 `http://127.0.0.1:8000/docs`，确认 OpenAPI 文档可打开。
+6. 打开 `frontend/index.html` 或部署后的静态前端，完成“开始、落子、AI 回复、悔棋、结束”主路径；如果后端地址不是 `http://127.0.0.1:8000`，需要同步调整 `frontend/index.html` 中的 `body[data-api-base]`。
+7. 确认部署形态为单进程或已接受当前限制：内存会话会在重启后丢失，多个进程或多个实例之间不会共享棋局。
 
 ## API 概览
 
