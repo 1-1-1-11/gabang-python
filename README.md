@@ -67,7 +67,7 @@ OpenAPI 中的游戏接口统一返回 `GameSnapshot`。错误响应使用 `Erro
 Start-Process .\frontend\index.html
 ```
 
-Task 11 只提供应用壳、棋盘、状态区和控制区。真正接入 `POST /api/games/*` 会在 Task 12 完成。
+前端已经接入 `POST /api/games/start`、`move`、`undo`、`end`。启动后端后打开 `frontend/index.html`，点击“开始”创建会话，点击棋盘落子，前端会渲染后端返回的 `GameSnapshot`。
 
 ## 运行测试
 
@@ -91,6 +91,8 @@ Invoke-RestMethod -Method Post `
   -ContentType application/json `
   -Body '{"size":15,"ai_first":false,"depth":4}'
 ```
+
+前端默认读取 `body[data-api-base]`，当前值为 `http://127.0.0.1:8000`。
 
 ## 当前结构
 

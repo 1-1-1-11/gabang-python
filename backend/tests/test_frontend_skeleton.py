@@ -45,7 +45,18 @@ def test_frontend_index_wires_css_js_and_app_shell():
 
     assert any(link.get("href") == "styles.css" for link in links)
     assert any(script.get("src") == "app.js" and script.get("type") == "module" for script in scripts)
-    assert {"app", "board", "status", "move-list"}.issubset(ids)
+    assert {
+        "app",
+        "board",
+        "status",
+        "move-list",
+        "start-button",
+        "undo-button",
+        "end-button",
+        "size-value",
+        "current-player-value",
+        "winner-value",
+    }.issubset(ids)
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -60,7 +71,20 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "renderBoard" in js
 
 
-def test_frontend_skeleton_does_not_call_game_api_yet():
+def test_frontend_calls_game_api_endpoints():
     js = (FRONTEND / "app.js").read_text(encoding="utf-8")
 
-    assert "fetch(" not in js
+    assert "fetch(" in js
+    assert '"/api/games/start"' in js
+    assert '`/api/games/${state.sessionId}/move`' in js
+    assert '`/api/games/${state.sessionId}/undo`' in js
+    assert '`/api/games/${state.sessionId}/end`' in js
+
+
+def test_frontend_renders_api_snapshots():
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert "function applySnapshot(snapshot)" in js
+    assert "snapshot.session_id" in js
+    assert "snapshot.current_player" in js
+    assert "state.board[row][col]" in js
