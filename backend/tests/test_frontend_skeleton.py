@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 
 
@@ -26,8 +27,6 @@ def test_frontend_uses_new_static_directory_only():
         ROOT / "src",
         ROOT / "public",
         ROOT / "images",
-        ROOT / "package.json",
-        ROOT / "package-lock.json",
         ROOT / "config-overrides.js",
         ROOT / "vue.config.js",
         ROOT / ".eslintignore",
@@ -35,6 +34,25 @@ def test_frontend_uses_new_static_directory_only():
 
     assert FRONTEND.is_dir()
     assert all(not path.exists() for path in forbidden_paths)
+
+
+def test_node_tooling_is_limited_to_e2e():
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    scripts = package.get("scripts", {})
+    dependencies = package.get("dependencies", {})
+    dev_dependencies = package.get("devDependencies", {})
+    lockfile = (ROOT / "package-lock.json").read_text(encoding="utf-8")
+
+    assert scripts == {
+        "test:e2e": "playwright test",
+        "test:e2e:headed": "playwright test --headed",
+    }
+    assert dependencies == {}
+    assert set(dev_dependencies) == {"@playwright/test"}
+    for forbidden in ("react", "react-dom", "vue", "vite", "webpack", "config-overrides"):
+        assert forbidden not in dependencies
+        assert forbidden not in dev_dependencies
+        assert f'node_modules/{forbidden}' not in lockfile
 
 
 def test_frontend_index_wires_css_js_and_app_shell():

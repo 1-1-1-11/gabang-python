@@ -47,6 +47,20 @@
 | Task 17.1: 运行时配置文档化 | 运行时与部署准备 | 已完成，待提交 | 文档化 CORS、内存会话、开发/生产边界 | 文档复现、自动测试 |
 | Task 17.2: 对局生命周期硬化测试 | 运行时与部署准备 | 已完成，待提交 | 覆盖重复操作、未知 session、非法请求状态保持 | 自动测试 |
 | Task 17.3: 最小部署验收清单 | 运行时与部署准备 | 已完成，待提交 | 形成启动、访问、CORS、测试检查清单 | 文档复现 |
+| Task 18.1: Playwright 主路径 E2E | 浏览器验收自动化 | 已完成，待提交 | 引入 Node Playwright 骨架并覆盖 start/move/undo/end 主路径 | E2E、全量 pytest |
+| Task 18.2: E2E 错误路径与控件状态 | 浏览器验收自动化 | 待执行 | 覆盖请求失败、非 JSON、busy、防重复操作 | E2E、全量 pytest |
+| Task 19.1: AI 搜索全局指标 | AI 性能基准化 | 待执行 | 暴露搜索调用、剪枝、深度等全局指标 | AI 测试、全量 pytest |
+| Task 19.2: AI 宽松性能阈值 | AI 性能基准化 | 待执行 | 为小棋局浅深度添加宽松耗时与指标阈值 | AI 基准、全量 pytest |
+| Task 19.3: AI 基准文档化 | AI 性能基准化 | 待执行 | 说明阈值用途和非 SLA 边界 | 文档复现、全量 pytest |
+| Task 20.1: 会话后端配置化 | Redis 会话准备 | 待执行 | 增加 memory/redis 配置入口并保留 memory 默认 | 自动测试 |
+| Task 20.2: 基础 Redis SessionStore | Redis 会话准备 | 待执行 | 实现可选 Redis 会话读写与序列化 | 自动测试、可选 Redis 验收 |
+| Task 20.3: Redis 生命周期与文档 | Redis 会话准备 | 待执行 | 验证 Redis 后端基础生命周期并补充部署说明 | 自动测试、文档复现 |
+| Task 21.1: 前端落子可读性 | 前端体验增强 | 待执行 | 最近一步高亮、1-based 落子记录、空格 hover | E2E、浏览器实测 |
+| Task 21.2: AI 信息展示 | 前端体验增强 | 待执行 | 展示 score、best_path、current_depth | E2E、浏览器实测 |
+| Task 21.3: 配置体验 | 前端体验增强 | 待执行 | 优化 size/depth/API 地址配置与提示 | E2E、浏览器实测 |
+| Task 22.1: README 最终收敛 | 验收演示交付 | 待执行 | README 反映 E2E、AI 基准、Redis 可选能力 | 文档复现 |
+| Task 22.2: TASKS 台账校准 | 验收演示交付 | 待执行 | 对齐 Task 18-22 状态、提交、审查与验收结果 | 台账一致 |
+| Task 22.3: CLAUDE.md 项目指南更新 | 验收演示交付 | 待执行 | 更新 Node 工具链、Redis、AI 基准协作指南 | 文档一致 |
 
 ## 记录规则
 

@@ -8,9 +8,10 @@
 
 - FastAPI 后端：承载棋盘规则、AI 搜索和会话管理。
 - Python 测试：用 pytest 覆盖棋盘规则、评分、搜索、API 合同和运行时边界。
+- 浏览器验收：用全新 Node Playwright E2E 覆盖静态前端主路径。
 - 全新静态前端：位于 `frontend/`，不依赖 Node 构建工具，不复用原始 JS 项目文件。
 
-远程仓库只保存 Python 重构版代码、测试、全新静态前端和相关文档。原始 JavaScript 源码、React 静态资源、旧 JS 测试、原始 README 和 Node 构建配置不进入 GitHub。
+远程仓库只保存 Python 重构版代码、测试、全新静态前端和相关文档。原始 JavaScript 源码、React 静态资源、旧 JS 测试、原始 README 和旧 Node 构建配置不进入 GitHub。当前 Node 配置仅用于全新 Playwright 浏览器验收，不参与前端构建。
 
 ## 当前能力
 
@@ -25,7 +26,7 @@
 
 ## 当前限制
 
-- 前端仍是基础 MVP：已提供棋盘大小、搜索深度和 AI 先手设置，但尚未引入完整端到端自动化测试。
+- 前端仍是基础 MVP：已提供棋盘大小、搜索深度和 AI 先手设置，已有 Playwright 主路径验收，错误路径与更多状态验收仍待补充。
 - AI 强度尚未基准化：已有即时胜利、缓存等测试，但还缺少系统化攻防棋形和耗时基准。
 - 会话只保存在进程内存中：服务重启会丢失棋局，多进程部署不能共享会话。
 - 开发模式默认 CORS 允许所有来源；部署时必须用 `GOBANG_CORS_ORIGINS` 收窄允许来源。
@@ -120,6 +121,16 @@ py -m pytest backend\tests\test_game_api.py -q
 ```powershell
 py -m pytest backend\tests\test_game_api.py::test_move_places_player_move_and_ai_reply -q
 ```
+
+浏览器端到端验收需要 Node.js，仅用于 Playwright 测试，不参与前端构建：
+
+```powershell
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+`npm run test:e2e` 会启动后端服务和 `frontend/` 静态 HTTP 服务，并在 Chromium 中执行主路径验收。
 
 ## 初步验收步骤
 
@@ -228,6 +239,10 @@ frontend/
   index.html
   styles.css
   app.js
+e2e/
+  gobang.spec.js
+playwright.config.js
+package.json
 docs/
   collaboration/
     TASKS.md

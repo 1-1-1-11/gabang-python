@@ -3,6 +3,8 @@
 .playwright-mcp/
 .spec-workflow/
 node_modules
+test-results
+playwright-report
 /dist
 .worktrees/
 __pycache__/
@@ -12,8 +14,6 @@ docs/legacy/
 /public/
 /images/
 /tests/
-/package.json
-/package-lock.json
 /config-overrides.js
 /vue.config.js
 /.eslintignore
