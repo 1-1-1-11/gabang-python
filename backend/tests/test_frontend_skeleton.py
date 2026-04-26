@@ -96,6 +96,17 @@ def test_frontend_handles_busy_state_and_non_json_errors():
     assert "isBusy" in js
     assert "setBusy(true)" in js
     assert "setBusy(false)" in js
+    assert "function isCellDisabled(row, col)" in js
+    assert "function updateBoardInteractivity()" in js
+    assert 'querySelectorAll(".cell")' in js
     assert "response.text()" in js
     assert "JSON.parse" in js
     assert "响应格式错误" in js
+
+
+def test_readme_uses_static_server_for_frontend_modules():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "py -m http.server 8080 --bind 127.0.0.1" in readme
+    assert "http://127.0.0.1:8080/" in readme
+    assert "不要直接用 `file://`" in readme

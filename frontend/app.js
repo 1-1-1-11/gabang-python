@@ -135,9 +135,22 @@ function setStatus(text) {
 function setBusy(isBusy) {
   state.isBusy = isBusy;
   startButton.disabled = isBusy;
-  undoButton.disabled = isBusy;
-  endButton.disabled = isBusy;
+  undoButton.disabled = isBusy || !state.sessionId;
+  endButton.disabled = isBusy || !state.sessionId;
   boardElement.classList.toggle("is-busy", isBusy);
+  updateBoardInteractivity();
+}
+
+function isCellDisabled(row, col) {
+  return state.isBusy || !state.sessionId || state.winner !== 0 || state.board[row]?.[col] !== 0;
+}
+
+function updateBoardInteractivity() {
+  boardElement.querySelectorAll(".cell").forEach((cell) => {
+    const row = Number(cell.dataset.row);
+    const col = Number(cell.dataset.col);
+    cell.disabled = isCellDisabled(row, col);
+  });
 }
 
 function createCell(row, col) {
@@ -148,7 +161,7 @@ function createCell(row, col) {
   cell.setAttribute("aria-label", `row ${row + 1}, column ${col + 1}`);
   cell.dataset.row = String(row);
   cell.dataset.col = String(col);
-  cell.disabled = state.isBusy;
+  cell.disabled = isCellDisabled(row, col);
   cell.addEventListener("click", () => {
     playMove(row, col).catch((error) => setStatus(error.message));
   });

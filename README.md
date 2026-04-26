@@ -71,10 +71,20 @@ OpenAPI 中的游戏接口统一返回 `GameSnapshot`。错误响应使用 `Erro
 当前前端位于 `frontend/`，是从零创建的静态 HTML/CSS/JS 骨架，不依赖 Node 构建工具，也不复用原始 JS 项目文件。
 
 ```powershell
-Start-Process .\frontend\index.html
+Push-Location frontend
+py -m http.server 8080 --bind 127.0.0.1
+Pop-Location
 ```
 
-前端已经接入 `POST /api/games/start`、`move`、`undo`、`end`。启动后端后打开 `frontend/index.html`，点击“开始”创建会话，点击棋盘落子，前端会渲染后端返回的 `GameSnapshot`。
+然后打开：
+
+```text
+http://127.0.0.1:8080/
+```
+
+前端已经接入 `POST /api/games/start`、`move`、`undo`、`end`。启动后端和前端静态服务器后，点击“开始”创建会话，点击棋盘落子，前端会渲染后端返回的 `GameSnapshot`。
+
+不要直接用 `file://` 打开 `frontend/index.html` 做验收；现代浏览器会阻止 `type="module"` 脚本从本地文件源加载。
 
 ## 运行测试
 

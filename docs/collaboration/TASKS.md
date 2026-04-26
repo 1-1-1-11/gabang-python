@@ -27,6 +27,7 @@
 | Task 11: 全新前端项目骨架 | `task/11-new-frontend-skeleton` | `.worktrees/11-new-frontend-skeleton` | 已完成 | `cb0ae11` / `7be6a5b` | `docs/collaboration/reviews/11-new-frontend-skeleton.md` | 已合并 |
 | Task 12: 全新前端接入游戏 API | `task/12-new-frontend-game-api` | `.worktrees/12-new-frontend-game-api` | 已完成 | `45ddb2f` / `325dbac` | `docs/collaboration/reviews/12-new-frontend-game-api.md` | 已合并 |
 | Task 13: 运行时边界硬化 | `task/13-runtime-hardening` | `.worktrees/13-runtime-hardening` | 已完成 | `7912523` / `e7ab758` / `79bffb2` | `docs/collaboration/reviews/13-runtime-hardening.md` | 已合并 |
+| Task 14: 前端验收修复 | `task/14-frontend-acceptance-fixes` | `.worktrees/14-frontend-acceptance-fixes` | 进行中 | 待提交 | `docs/collaboration/reviews/14-frontend-acceptance-fixes.md` | 未合并 |
 
 ## 记录规则
 
