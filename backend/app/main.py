@@ -1,11 +1,18 @@
 from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Path
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.game import create_session, get_session, play_ai_move, remove_session, snapshot
 from backend.app.schemas import GAME_ERROR_RESPONSES, GameSnapshot, HealthResponse, MoveRequest, StartGameRequest
 
 app = FastAPI(title="gobang-python")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/api/health", tags=["system"], response_model=HealthResponse)

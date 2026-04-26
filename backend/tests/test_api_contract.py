@@ -44,3 +44,18 @@ def test_openapi_includes_request_examples():
 
     assert start_examples["human_first"]["value"] == {"size": 15, "ai_first": False, "depth": 4}
     assert move_examples["center_move"]["value"] == {"position": [7, 7], "depth": 4}
+
+
+def test_api_allows_static_frontend_cors_requests():
+    client = TestClient(app)
+
+    response = client.options(
+        "/api/games/start",
+        headers={
+            "Origin": "null",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "*"

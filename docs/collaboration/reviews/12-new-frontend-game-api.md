@@ -2,7 +2,7 @@
 
 **分支**: `task/12-new-frontend-game-api`
 **Commit**: `45ddb2f` feat: 接入全新前端游戏流程
-**审查时间**: 待 Claude Code 填写
+**审查时间**: 2026-04-26
 **审查者**: Claude Code
 
 ---
@@ -29,22 +29,25 @@
 
 ## Blocker
 
-待 Claude Code 审查。
+无可执行记录。用户已确认 Claude 审查完毕，仓库内未发现额外审查正文。
 
 ## Major
 
-待 Claude Code 审查。
+无可执行记录。用户已确认 Claude 审查完毕，仓库内未发现额外审查正文。
 
 ## Minor
 
-待 Claude Code 审查。
+无可执行记录。
 
 ## Question
 
-待 Claude Code 审查。
+无可执行记录。
 
 ---
 
 ## Codex 处理记录
 
-待 Claude Code 审查结束后填写。
+- 已核对主工作区和 Task 12 worktree，未发现 Claude 额外写入的 Task 12 审查正文。
+- 根据用户消息“审查结束”，本轮没有需要处理的 Blocker/Major 明细。
+- 合并前自查发现静态 `frontend/index.html` 直接调用本地 FastAPI 时需要 CORS；已补充 `CORSMiddleware` 和 `test_api_allows_static_frontend_cors_requests`。
+- 修复后执行 `py -m pytest backend\tests -q`，结果为 `51 passed`。
