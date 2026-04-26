@@ -1,4 +1,5 @@
-from time import monotonic
+from threading import Event, Thread
+from time import monotonic, sleep
 
 from fastapi.testclient import TestClient
 
@@ -31,6 +32,51 @@ def test_session_store_evicts_oldest_session_with_locking_boundary():
     assert second in store
     assert third in store
     assert len(store) == 2
+
+
+def test_session_store_serializes_same_session_actions():
+    store = SessionStore(max_sessions=2, ttl_seconds=60)
+    session_id = store.create(GameSession(board=Board(size=5), ai_first=False, depth=1))
+    entered = Event()
+    release = Event()
+    order = []
+
+    def first_action(session):
+        order.append("first-entered")
+        entered.set()
+        release.wait(timeout=1)
+        session.board.put(0, 0)
+        order.append("first-leaving")
+
+    def second_action(session):
+        order.append(f"second-history-{len(session.board.history)}")
+
+    first = Thread(target=lambda: store.with_session(session_id, first_action))
+    second = Thread(target=lambda: store.with_session(session_id, second_action))
+
+    first.start()
+    assert entered.wait(timeout=1)
+    second.start()
+    sleep(0.02)
+
+    assert order == ["first-entered"]
+
+    release.set()
+    first.join(timeout=1)
+    second.join(timeout=1)
+
+    assert order == ["first-entered", "first-leaving", "second-history-1"]
+
+
+def test_session_store_can_remove_while_holding_session_lock():
+    store = SessionStore(max_sessions=2, ttl_seconds=60)
+    session = GameSession(board=Board(size=5), ai_first=False, depth=1)
+    session_id = store.create(session)
+
+    result = store.with_session(session_id, lambda active: active is session, remove=True)
+
+    assert result is True
+    assert store.get(session_id) is None
 
 
 def test_cors_origins_are_configurable(monkeypatch):

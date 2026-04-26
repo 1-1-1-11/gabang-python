@@ -2,7 +2,7 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from threading import RLock
 from time import monotonic
-from typing import Callable
+from typing import Callable, TypeVar
 from uuid import uuid4
 
 from backend.app.board import Board
@@ -17,10 +17,12 @@ class GameSession:
     last_score: int = 0
     last_best_path: list[list[int]] = field(default_factory=list)
     last_current_depth: int = 0
+    lock: RLock = field(default_factory=RLock, repr=False)
 
 
 MAX_SESSIONS = 256
 SESSION_TTL_SECONDS = 60 * 60
+T = TypeVar("T")
 
 
 class SessionStore:
@@ -33,7 +35,7 @@ class SessionStore:
 
     def create(self, session: GameSession) -> str:
         with self._lock:
-            self.prune_expired()
+            self._prune_expired_locked()
             while len(self._items) >= self.max_sessions:
                 self._items.popitem(last=False)
             session_id = str(uuid4())
@@ -42,14 +44,20 @@ class SessionStore:
 
     def get(self, session_id: str) -> GameSession | None:
         with self._lock:
-            item = self._items.get(session_id)
-            if item is None:
+            return self._get_valid_locked(session_id)
+
+    def with_session(self, session_id: str, action: Callable[[GameSession], T], *, remove: bool = False) -> T | None:
+        with self._lock:
+            session = self._get_valid_locked(session_id)
+            if session is None:
                 return None
-            session, created_at = item
-            if self._is_expired(created_at):
+            session.lock.acquire()
+            if remove:
                 self._items.pop(session_id, None)
-                return None
-            return session
+        try:
+            return action(session)
+        finally:
+            session.lock.release()
 
     def remove(self, session_id: str) -> GameSession | None:
         with self._lock:
@@ -62,17 +70,30 @@ class SessionStore:
 
     def prune_expired(self) -> None:
         with self._lock:
-            expired = [session_id for session_id, (_, created_at) in self._items.items() if self._is_expired(created_at)]
-            for session_id in expired:
-                self._items.pop(session_id, None)
+            self._prune_expired_locked()
 
     def __contains__(self, session_id: object) -> bool:
         return isinstance(session_id, str) and self.get(session_id) is not None
 
     def __len__(self) -> int:
         with self._lock:
-            self.prune_expired()
+            self._prune_expired_locked()
             return len(self._items)
+
+    def _get_valid_locked(self, session_id: str) -> GameSession | None:
+        item = self._items.get(session_id)
+        if item is None:
+            return None
+        session, created_at = item
+        if self._is_expired(created_at):
+            self._items.pop(session_id, None)
+            return None
+        return session
+
+    def _prune_expired_locked(self) -> None:
+        expired = [session_id for session_id, (_, created_at) in self._items.items() if self._is_expired(created_at)]
+        for session_id in expired:
+            self._items.pop(session_id, None)
 
     def _is_expired(self, created_at: float) -> bool:
         return self._clock() - created_at >= self.ttl_seconds
@@ -85,12 +106,17 @@ def create_session(size: int, ai_first: bool, depth: int) -> tuple[str, GameSess
     session = GameSession(board=Board(size=size), ai_first=ai_first, depth=depth)
     session_id = sessions.create(session)
     if ai_first:
-        play_ai_move(session, depth)
+        with session.lock:
+            play_ai_move(session, depth)
     return session_id, session
 
 
 def get_session(session_id: str) -> GameSession | None:
     return sessions.get(session_id)
+
+
+def with_session(session_id: str, action: Callable[[GameSession], T], *, remove: bool = False) -> T | None:
+    return sessions.with_session(session_id, action, remove=remove)
 
 
 def remove_session(session_id: str) -> GameSession | None:

@@ -50,7 +50,7 @@ http://127.0.0.1:8000
 py -m backend.dev_server --host 0.0.0.0 --port 9000 --reload
 ```
 
-CORS 默认允许本地静态前端访问。部署时可用逗号分隔的环境变量收窄允许来源：
+CORS 在开发模式下默认允许所有来源，方便本地静态前端直接访问。部署时应使用逗号分隔的环境变量收窄允许来源：
 
 ```powershell
 $env:GOBANG_CORS_ORIGINS="https://gobang.example"
