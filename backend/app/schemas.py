@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class HealthResponse(BaseModel):
@@ -14,6 +14,13 @@ class StartGameRequest(BaseModel):
 class MoveRequest(BaseModel):
     position: tuple[int, int] = Field(description="Board coordinate as [row, column].")
     depth: int | None = Field(default=None, ge=1, le=8, description="Optional AI search depth override.")
+
+    @field_validator("position")
+    @classmethod
+    def position_must_be_non_negative(cls, position: tuple[int, int]) -> tuple[int, int]:
+        if any(value < 0 for value in position):
+            raise ValueError("position coordinates must be non-negative")
+        return position
 
 
 class MoveRecord(BaseModel):

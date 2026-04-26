@@ -38,6 +38,11 @@ button:hover {
   background: var(--accent);
 }
 
+button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: minmax(420px, 1fr) minmax(280px, 360px);
@@ -120,6 +125,10 @@ h1 {
   display: flex;
   justify-content: center;
   min-width: 0;
+}
+
+.board.is-busy .cell {
+  cursor: wait;
 }
 
 .stone {

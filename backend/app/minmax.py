@@ -24,7 +24,7 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
     if current_depth >= depth or board.is_game_over():
         return [board.evaluate(role), None, path.copy()]
 
-    cache_key = (board.hash(), role, depth - current_depth, only_three, only_four)
+    cache_key = _build_cache_key(board, role, depth - current_depth, only_three, only_four)
     cached = _cache.get(cache_key)
     if cached is not None:
         cache_hits["hit"] += 1
@@ -62,3 +62,7 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
 def reset_search_cache() -> None:
     _cache.clear()
     cache_hits.update({"search": 0, "total": 0, "hit": 0})
+
+
+def _build_cache_key(board, role: int, remaining_depth: int, only_three: bool, only_four: bool):
+    return (board.size, board.hash(), role, remaining_depth, only_three, only_four)

@@ -5,11 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.game import create_session, get_session, play_ai_move, remove_session, snapshot
 from backend.app.schemas import GAME_ERROR_RESPONSES, GameSnapshot, HealthResponse, MoveRequest, StartGameRequest
+from backend.app.settings import get_cors_origins
 
 app = FastAPI(title="gobang-python")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=get_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -72,6 +73,8 @@ def make_move(session_id: Annotated[str, Path(min_length=1)], request: MoveReque
         raise HTTPException(status_code=400, detail="Game is already over.")
 
     i, j = request.position
+    if i >= board.size or j >= board.size:
+        raise HTTPException(status_code=400, detail="Move position outside board.")
     if not board.put(i, j, board.current_player):
         raise HTTPException(status_code=400, detail="Invalid move.")
 

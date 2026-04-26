@@ -4,7 +4,7 @@ from typing import Any
 
 
 class Cache:
-    def __init__(self, capacity: int = 1_000_000):
+    def __init__(self, capacity: int = 100_000):
         self.capacity = capacity
         self._items: OrderedDict[Hashable, Any] = OrderedDict()
 

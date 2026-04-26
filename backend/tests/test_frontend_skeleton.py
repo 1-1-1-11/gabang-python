@@ -88,3 +88,14 @@ def test_frontend_renders_api_snapshots():
     assert "snapshot.session_id" in js
     assert "snapshot.current_player" in js
     assert "state.board[row][col]" in js
+
+
+def test_frontend_handles_busy_state_and_non_json_errors():
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert "isBusy" in js
+    assert "setBusy(true)" in js
+    assert "setBusy(false)" in js
+    assert "response.text()" in js
+    assert "JSON.parse" in js
+    assert "响应格式错误" in js

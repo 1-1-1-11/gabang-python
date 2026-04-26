@@ -21,6 +21,7 @@ const state = {
   currentPlayer: 1,
   size: BOARD_SIZE,
   depth: SEARCH_DEPTH,
+  isBusy: false,
 };
 
 function roleName(role) {
@@ -38,7 +39,13 @@ async function requestJson(path, options = {}) {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
-  const payload = await response.json();
+  const text = await response.text();
+  let payload;
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error("响应格式错误");
+  }
   if (!response.ok) {
     throw new Error(payload.detail ?? "请求失败");
   }
@@ -57,49 +64,80 @@ function applySnapshot(snapshot) {
 }
 
 async function startGame() {
+  if (state.isBusy) {
+    return;
+  }
+  setBusy(true);
   setStatus("连接中");
-  const snapshot = await requestJson("/api/games/start", {
-    method: "POST",
-    body: JSON.stringify({ size: BOARD_SIZE, ai_first: false, depth: SEARCH_DEPTH }),
-  });
-  applySnapshot(snapshot);
-  setStatus("进行中");
+  try {
+    const snapshot = await requestJson("/api/games/start", {
+      method: "POST",
+      body: JSON.stringify({ size: BOARD_SIZE, ai_first: false, depth: SEARCH_DEPTH }),
+    });
+    applySnapshot(snapshot);
+    setStatus("进行中");
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function playMove(row, col) {
-  if (!state.sessionId || state.winner || state.board[row]?.[col] !== 0) {
+  if (state.isBusy || !state.sessionId || state.winner || state.board[row]?.[col] !== 0) {
     return;
   }
+  setBusy(true);
   setStatus("AI 思考");
-  const snapshot = await requestJson(`/api/games/${state.sessionId}/move`, {
-    method: "POST",
-    body: JSON.stringify({ position: [row, col], depth: SEARCH_DEPTH }),
-  });
-  applySnapshot(snapshot);
-  setStatus(snapshot.winner ? "已结束" : "进行中");
+  try {
+    const snapshot = await requestJson(`/api/games/${state.sessionId}/move`, {
+      method: "POST",
+      body: JSON.stringify({ position: [row, col], depth: SEARCH_DEPTH }),
+    });
+    applySnapshot(snapshot);
+    setStatus(snapshot.winner ? "已结束" : "进行中");
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function undoMove() {
-  if (!state.sessionId) {
+  if (state.isBusy || !state.sessionId) {
     return;
   }
-  const snapshot = await requestJson(`/api/games/${state.sessionId}/undo`, { method: "POST" });
-  applySnapshot(snapshot);
-  setStatus("已悔棋");
+  setBusy(true);
+  try {
+    const snapshot = await requestJson(`/api/games/${state.sessionId}/undo`, { method: "POST" });
+    applySnapshot(snapshot);
+    setStatus("已悔棋");
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function endGame() {
-  if (!state.sessionId) {
+  if (state.isBusy || !state.sessionId) {
     return;
   }
-  const snapshot = await requestJson(`/api/games/${state.sessionId}/end`, { method: "POST" });
-  applySnapshot(snapshot);
-  state.sessionId = null;
-  setStatus("已结束");
+  setBusy(true);
+  try {
+    const snapshot = await requestJson(`/api/games/${state.sessionId}/end`, { method: "POST" });
+    applySnapshot(snapshot);
+    state.sessionId = null;
+    setStatus("已结束");
+  } finally {
+    setBusy(false);
+  }
 }
 
 function setStatus(text) {
   statusElement.textContent = text;
+}
+
+function setBusy(isBusy) {
+  state.isBusy = isBusy;
+  startButton.disabled = isBusy;
+  undoButton.disabled = isBusy;
+  endButton.disabled = isBusy;
+  boardElement.classList.toggle("is-busy", isBusy);
 }
 
 function createCell(row, col) {
@@ -110,6 +148,7 @@ function createCell(row, col) {
   cell.setAttribute("aria-label", `row ${row + 1}, column ${col + 1}`);
   cell.dataset.row = String(row);
   cell.dataset.col = String(col);
+  cell.disabled = state.isBusy;
   cell.addEventListener("click", () => {
     playMove(row, col).catch((error) => setStatus(error.message));
   });
