@@ -4,6 +4,15 @@ from backend.app.evaluation import FIVE
 MAX = 1_000_000_000
 
 cache_hits = {"search": 0, "total": 0, "hit": 0}
+search_metrics = {
+    "nodes": 0,
+    "cache_hits": 0,
+    "cache_stores": 0,
+    "prunes": 0,
+    "max_depth": 0,
+    "candidate_moves": 0,
+    "leaf_nodes": 0,
+}
 _cache = Cache()
 
 
@@ -21,18 +30,24 @@ def vcf(board, role: int, depth: int = 8):
 
 def _search(board, role: int, depth: int, current_depth: int, path: list[list[int]], alpha: int, beta: int, only_three: bool = False, only_four: bool = False):
     cache_hits["search"] += 1
+    search_metrics["nodes"] += 1
+    search_metrics["max_depth"] = max(search_metrics["max_depth"], current_depth)
     if current_depth >= depth or board.is_game_over():
+        search_metrics["leaf_nodes"] += 1
         return [board.evaluate(role), None, path.copy()]
 
     cache_key = _build_cache_key(board, role, depth - current_depth, only_three, only_four)
     cached = _cache.get(cache_key)
     if cached is not None:
         cache_hits["hit"] += 1
+        search_metrics["cache_hits"] += 1
         cached_value, cached_move, cached_path = cached
         return [cached_value, cached_move, path + cached_path]
 
     moves = board.get_valuable_moves(role, current_depth, only_three, only_four)
+    search_metrics["candidate_moves"] += len(moves)
     if not moves:
+        search_metrics["leaf_nodes"] += 1
         return [board.evaluate(role), None, path.copy()]
 
     value = -MAX
@@ -51,17 +66,30 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
             best_path = current_path
         alpha = max(alpha, value)
         if alpha >= beta or alpha >= FIVE:
+            search_metrics["prunes"] += 1
             break
 
     remaining_path = best_path[current_depth:]
     _cache.put(cache_key, (value, best_move, remaining_path))
     cache_hits["total"] += 1
+    search_metrics["cache_stores"] += 1
     return [value, best_move, best_path]
 
 
 def reset_search_cache() -> None:
     _cache.clear()
     cache_hits.update({"search": 0, "total": 0, "hit": 0})
+    search_metrics.update(
+        {
+            "nodes": 0,
+            "cache_hits": 0,
+            "cache_stores": 0,
+            "prunes": 0,
+            "max_depth": 0,
+            "candidate_moves": 0,
+            "leaf_nodes": 0,
+        }
+    )
 
 
 def _build_cache_key(board, role: int, remaining_depth: int, only_three: bool, only_four: bool):

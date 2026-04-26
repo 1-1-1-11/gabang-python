@@ -2,7 +2,7 @@ import pytest
 
 from backend.app.board import Board
 from backend.app.evaluation import FIVE, FOUR, Evaluate
-from backend.app.minmax import cache_hits, minmax, reset_search_cache, vcf, vct
+from backend.app.minmax import cache_hits, minmax, reset_search_cache, search_metrics, vcf, vct
 from backend.app.shape import Shape, get_shape_fast
 from backend.app.zobrist import Zobrist
 
@@ -112,6 +112,51 @@ def test_minmax_uses_zobrist_cache_on_repeated_search():
 
     assert cache_hits["hit"] > 0
     assert second == first
+
+
+def test_search_metrics_track_nodes_depth_candidates_and_cache():
+    board = Board(size=6)
+    steps = [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2], [2, 3], [3, 3], [3, 4]]
+    play(board, steps)
+
+    first = minmax(board, 1, depth=2)
+
+    assert first[1] == [4, 4]
+    assert search_metrics["nodes"] > 0
+    assert search_metrics["leaf_nodes"] > 0
+    assert search_metrics["cache_stores"] > 0
+    assert search_metrics["candidate_moves"] > 0
+    assert search_metrics["max_depth"] == 1
+    assert search_metrics["cache_hits"] == 0
+
+    second = minmax(board, 1, depth=2)
+
+    assert second == first
+    assert search_metrics["cache_hits"] > 0
+    assert cache_hits["hit"] == search_metrics["cache_hits"]
+    assert cache_hits["search"] == search_metrics["nodes"]
+
+
+def test_reset_search_cache_resets_metrics():
+    board = Board(size=6)
+    steps = [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2], [2, 3], [3, 3], [3, 4]]
+    play(board, steps)
+    minmax(board, 1, depth=2)
+
+    assert any(search_metrics.values())
+
+    reset_search_cache()
+
+    assert search_metrics == {
+        "nodes": 0,
+        "cache_hits": 0,
+        "cache_stores": 0,
+        "prunes": 0,
+        "max_depth": 0,
+        "candidate_moves": 0,
+        "leaf_nodes": 0,
+    }
+    assert cache_hits == {"search": 0, "total": 0, "hit": 0}
 
 
 def test_minmax_blocks_opponent_immediate_win():
