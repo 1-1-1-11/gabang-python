@@ -8,6 +8,9 @@ const moveListElement = document.querySelector("#move-list");
 const startButton = document.querySelector("#start-button");
 const undoButton = document.querySelector("#undo-button");
 const endButton = document.querySelector("#end-button");
+const boardSizeInput = document.querySelector("#board-size-input");
+const searchDepthInput = document.querySelector("#search-depth-input");
+const aiFirstInput = document.querySelector("#ai-first-input");
 const sizeValue = document.querySelector("#size-value");
 const depthValue = document.querySelector("#depth-value");
 const currentPlayerValue = document.querySelector("#current-player-value");
@@ -22,6 +25,7 @@ const state = {
   size: BOARD_SIZE,
   depth: SEARCH_DEPTH,
   isBusy: false,
+  status: "待开始",
 };
 
 function roleName(role) {
@@ -61,21 +65,34 @@ function applySnapshot(snapshot) {
   state.size = snapshot.size;
   state.depth = snapshot.current_depth || state.depth;
   renderBoard();
+  updateControls();
+}
+
+function readGameSettings() {
+  return {
+    size: Number(boardSizeInput.value),
+    depth: Number(searchDepthInput.value),
+    aiFirst: aiFirstInput.checked,
+  };
 }
 
 async function startGame() {
   if (state.isBusy) {
     return;
   }
+  const settings = readGameSettings();
   setBusy(true);
   setStatus("连接中");
   try {
     const snapshot = await requestJson("/api/games/start", {
       method: "POST",
-      body: JSON.stringify({ size: BOARD_SIZE, ai_first: false, depth: SEARCH_DEPTH }),
+      body: JSON.stringify({ size: settings.size, ai_first: settings.aiFirst, depth: settings.depth }),
     });
+    state.depth = settings.depth;
     applySnapshot(snapshot);
     setStatus("进行中");
+  } catch (error) {
+    setStatus(error.message);
   } finally {
     setBusy(false);
   }
@@ -90,10 +107,12 @@ async function playMove(row, col) {
   try {
     const snapshot = await requestJson(`/api/games/${state.sessionId}/move`, {
       method: "POST",
-      body: JSON.stringify({ position: [row, col], depth: SEARCH_DEPTH }),
+      body: JSON.stringify({ position: [row, col], depth: state.depth }),
     });
     applySnapshot(snapshot);
     setStatus(snapshot.winner ? "已结束" : "进行中");
+  } catch (error) {
+    setStatus(error.message);
   } finally {
     setBusy(false);
   }
@@ -108,6 +127,8 @@ async function undoMove() {
     const snapshot = await requestJson(`/api/games/${state.sessionId}/undo`, { method: "POST" });
     applySnapshot(snapshot);
     setStatus("已悔棋");
+  } catch (error) {
+    setStatus(error.message);
   } finally {
     setBusy(false);
   }
@@ -123,21 +144,40 @@ async function endGame() {
     applySnapshot(snapshot);
     state.sessionId = null;
     setStatus("已结束");
+  } catch (error) {
+    setStatus(error.message);
   } finally {
     setBusy(false);
   }
 }
 
 function setStatus(text) {
+  state.status = text;
   statusElement.textContent = text;
 }
 
 function setBusy(isBusy) {
   state.isBusy = isBusy;
-  startButton.disabled = isBusy;
-  undoButton.disabled = isBusy;
-  endButton.disabled = isBusy;
+  startButton.classList.toggle("is-busy", isBusy);
+  undoButton.classList.toggle("is-busy", isBusy);
+  endButton.classList.toggle("is-busy", isBusy);
   boardElement.classList.toggle("is-busy", isBusy);
+  updateControls();
+}
+
+function updateControls() {
+  startButton.disabled = state.isBusy || Boolean(state.sessionId);
+  undoButton.disabled = state.isBusy || !state.sessionId || state.history.length === 0;
+  endButton.disabled = state.isBusy || !state.sessionId;
+  boardSizeInput.disabled = state.isBusy || Boolean(state.sessionId);
+  searchDepthInput.disabled = state.isBusy || Boolean(state.sessionId);
+  aiFirstInput.disabled = state.isBusy || Boolean(state.sessionId);
+
+  for (const cell of boardElement.querySelectorAll(".cell")) {
+    const row = Number(cell.dataset.row);
+    const col = Number(cell.dataset.col);
+    cell.disabled = state.isBusy || !state.sessionId || Boolean(state.winner) || state.board[row]?.[col] !== 0;
+  }
 }
 
 function createCell(row, col) {
@@ -148,9 +188,9 @@ function createCell(row, col) {
   cell.setAttribute("aria-label", `row ${row + 1}, column ${col + 1}`);
   cell.dataset.row = String(row);
   cell.dataset.col = String(col);
-  cell.disabled = state.isBusy;
+  cell.disabled = state.isBusy || !state.sessionId || Boolean(state.winner) || state.board[row]?.[col] !== 0;
   cell.addEventListener("click", () => {
-    playMove(row, col).catch((error) => setStatus(error.message));
+    playMove(row, col);
   });
   return cell;
 }
@@ -200,16 +240,17 @@ function renderBoard() {
 }
 
 startButton.addEventListener("click", () => {
-  startGame().catch((error) => setStatus(error.message));
+  startGame();
 });
 
 undoButton.addEventListener("click", () => {
-  undoMove().catch((error) => setStatus(error.message));
+  undoMove();
 });
 
 endButton.addEventListener("click", () => {
-  endGame().catch((error) => setStatus(error.message));
+  endGame();
 });
 
 setStatus("待开始");
 renderBoard();
+updateControls();

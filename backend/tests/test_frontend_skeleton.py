@@ -53,6 +53,9 @@ def test_frontend_index_wires_css_js_and_app_shell():
         "start-button",
         "undo-button",
         "end-button",
+        "board-size-input",
+        "search-depth-input",
+        "ai-first-input",
         "size-value",
         "current-player-value",
         "winner-value",
@@ -65,6 +68,9 @@ def test_frontend_assets_define_board_and_api_placeholders():
     js = (FRONTEND / "app.js").read_text(encoding="utf-8")
 
     assert 'data-api-base="http://127.0.0.1:8000"' in html
+    assert 'id="board-size-input"' in html
+    assert 'id="search-depth-input"' in html
+    assert 'id="ai-first-input"' in html
     assert "--board-size: 15" in css
     assert "grid-template-columns: repeat(var(--board-size), 1fr)" in css
     assert "const BOARD_SIZE = 15" in js
@@ -99,3 +105,41 @@ def test_frontend_handles_busy_state_and_non_json_errors():
     assert "response.text()" in js
     assert "JSON.parse" in js
     assert "响应格式错误" in js
+    assert "catch (error)" in js
+    assert "setStatus(error.message)" in js
+
+
+def test_frontend_updates_controls_from_session_state():
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert "function updateControls()" in js
+    assert "startButton.disabled = state.isBusy || Boolean(state.sessionId)" in js
+    assert "undoButton.disabled = state.isBusy || !state.sessionId || state.history.length === 0" in js
+    assert "endButton.disabled = state.isBusy || !state.sessionId" in js
+    assert "boardSizeInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
+    assert "searchDepthInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
+    assert "aiFirstInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
+    assert "for (const cell of boardElement.querySelectorAll" in js
+    assert "cell.disabled = state.isBusy || !state.sessionId || Boolean(state.winner)" in js
+    assert "updateControls();" in js
+
+
+def test_frontend_reads_start_settings_from_controls():
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert "function readGameSettings()" in js
+    assert "size: Number(boardSizeInput.value)" in js
+    assert "depth: Number(searchDepthInput.value)" in js
+    assert "aiFirst: aiFirstInput.checked" in js
+    assert "JSON.stringify({ size: settings.size, ai_first: settings.aiFirst, depth: settings.depth })" in js
+    assert "JSON.stringify({ position: [row, col], depth: state.depth })" in js
+
+
+def test_frontend_tracks_status_in_state():
+    js = (FRONTEND / "app.js").read_text(encoding="utf-8")
+
+    assert 'status: "待开始"' in js
+    assert "state.status = text" in js
+    assert 'setStatus("连接中")' in js
+    assert 'setStatus("AI 思考")' in js
+    assert 'setStatus("已结束")' in js

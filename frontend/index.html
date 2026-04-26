@@ -24,6 +24,24 @@
 
       <aside class="side-panel" aria-label="棋局控制">
         <div class="panel-section">
+          <p class="section-label">Settings</p>
+          <div class="settings-grid">
+            <label for="board-size-input">
+              棋盘
+              <input id="board-size-input" type="number" min="5" max="25" value="15">
+            </label>
+            <label for="search-depth-input">
+              深度
+              <input id="search-depth-input" type="number" min="1" max="8" value="4">
+            </label>
+            <label class="checkbox-row" for="ai-first-input">
+              <input id="ai-first-input" type="checkbox">
+              AI 先手
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
           <p class="section-label">Controls</p>
           <div class="button-row">
             <button id="start-button" type="button">开始</button>
