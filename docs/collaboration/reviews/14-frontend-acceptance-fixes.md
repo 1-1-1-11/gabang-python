@@ -1,7 +1,7 @@
 # Task 14 审查报告: 前端验收修复
 
 **分支**: `task/14-frontend-acceptance-fixes`
-**Commit**: 待提交
+**Commit**: `3eb54f4` fix: 修复前端验收交互
 **审查时间**: 待 Claude Code 填写
 **审查者**: Claude Code
 
