@@ -1,5 +1,25 @@
 const { expect, test } = require("@playwright/test");
 
+function board(size) {
+  return Array.from({ length: size }, () => Array(size).fill(0));
+}
+
+function snapshot(overrides = {}) {
+  const size = overrides.size ?? 6;
+  return {
+    session_id: "e2e-session",
+    board: board(size),
+    history: [],
+    current_player: 1,
+    winner: null,
+    size,
+    score: null,
+    best_path: [],
+    current_depth: overrides.current_depth ?? 1,
+    ...overrides,
+  };
+}
+
 test("plays the main game path", async ({ page }) => {
   await page.goto("/");
 
@@ -56,4 +76,104 @@ test("plays the main game path", async ({ page }) => {
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
   await expect(board.locator(".cell").first()).toBeDisabled();
+});
+
+test("sends settings and disables controls while starting", async ({ page }) => {
+  let requestCount = 0;
+  let requestBody;
+  let releaseStart;
+  const startCanFinish = new Promise((resolve) => {
+    releaseStart = resolve;
+  });
+
+  await page.route("**/api/games/start", async (route) => {
+    requestCount += 1;
+    requestBody = route.request().postDataJSON();
+    await startCanFinish;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ size: requestBody.size, current_depth: requestBody.depth })),
+    });
+  });
+
+  await page.goto("/");
+
+  const boardElement = page.locator("#board");
+  const startButton = page.locator("#start-button");
+  const undoButton = page.locator("#undo-button");
+  const endButton = page.locator("#end-button");
+  const boardSizeInput = page.locator("#board-size-input");
+  const searchDepthInput = page.locator("#search-depth-input");
+  const aiFirstInput = page.locator("#ai-first-input");
+
+  await boardSizeInput.fill("7");
+  await searchDepthInput.fill("2");
+  await aiFirstInput.check();
+  await startButton.click();
+
+  await expect(page.locator("#status")).toHaveText("连接中");
+  await expect(startButton).toBeDisabled();
+  await expect(undoButton).toBeDisabled();
+  await expect(endButton).toBeDisabled();
+  await expect(boardSizeInput).toBeDisabled();
+  await expect(searchDepthInput).toBeDisabled();
+  await expect(aiFirstInput).toBeDisabled();
+  await expect(boardElement.locator(".cell").first()).toBeDisabled();
+
+  await page.evaluate(() => document.querySelector("#start-button").click());
+  expect(requestCount).toBe(1);
+
+  releaseStart();
+
+  await expect(page.locator("#status")).toHaveText("进行中");
+  await expect(page.locator("#size-value")).toHaveText("7 x 7");
+  await expect(page.locator("#depth-value")).toHaveText("2");
+  await expect(boardElement.locator(".cell")).toHaveCount(49);
+  await expect(endButton).toBeEnabled();
+  expect(requestBody).toEqual({ size: 7, ai_first: true, depth: 2 });
+});
+
+test("recovers controls after json error responses", async ({ page }) => {
+  await page.route("**/api/games/start", async (route) => {
+    await route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "服务暂不可用" }),
+    });
+  });
+
+  await page.goto("/");
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#start-button").click();
+
+  await expect(page.locator("#status")).toHaveText("服务暂不可用");
+  await expect(page.locator("#start-button")).toBeEnabled();
+  await expect(page.locator("#board-size-input")).toBeEnabled();
+  await expect(page.locator("#search-depth-input")).toBeEnabled();
+  await expect(page.locator("#undo-button")).toBeDisabled();
+  await expect(page.locator("#end-button")).toBeDisabled();
+});
+
+test("recovers controls after non-json responses", async ({ page }) => {
+  await page.route("**/api/games/start", async (route) => {
+    await route.fulfill({
+      status: 502,
+      contentType: "text/plain",
+      body: "bad gateway",
+    });
+  });
+
+  await page.goto("/");
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#start-button").click();
+
+  await expect(page.locator("#status")).toHaveText("响应格式错误");
+  await expect(page.locator("#start-button")).toBeEnabled();
+  await expect(page.locator("#board-size-input")).toBeEnabled();
+  await expect(page.locator("#search-depth-input")).toBeEnabled();
+  await expect(page.locator("#undo-button")).toBeDisabled();
+  await expect(page.locator("#end-button")).toBeDisabled();
 });
