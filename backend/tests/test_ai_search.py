@@ -251,6 +251,25 @@ def test_vcf_prefers_four_candidate_set():
     assert path[0] == move
 
 
+@pytest.mark.parametrize(
+    ("search", "steps", "expected_path"),
+    [
+        (minmax, [[4, 2], [0, 0], [4, 3], [0, 1], [4, 4], [0, 2]], [[4, 5], [4, 6]]),
+        (vct, [[4, 3], [0, 0], [4, 4], [0, 1], [5, 5], [0, 2]], [[3, 3], [2, 2]]),
+        (vcf, [[5, 3], [0, 0], [4, 4], [0, 1], [3, 5], [0, 2]], [[2, 6], [6, 2]]),
+    ],
+)
+def test_searches_return_expected_continuous_threat_paths(search, steps, expected_path):
+    board = Board(size=9)
+    play(board, steps)
+
+    value, move, path = search(board, 1, depth=2)
+
+    assert value > 0
+    assert move == expected_path[0]
+    assert path[:2] == expected_path
+
+
 def test_repeated_minmax_search_does_not_mutate_board_state_or_result():
     board = Board(size=9)
     steps = [[4, 4], [5, 3], [4, 5], [5, 4], [3, 5], [6, 4]]
