@@ -16,6 +16,8 @@ class Board:
         self.first_role = first_role
         self.current_player = first_role
         self.history: list[dict[str, int]] = []
+        self._winner = 0
+        self._winner_history: list[int] = []
         self.zobrist = Zobrist(size)
         self.evaluator = Evaluate(size)
 
@@ -31,8 +33,11 @@ class Board:
 
         self.board[i][j] = role
         self.history.append({"i": i, "j": j, "role": role})
+        self._winner_history.append(self._winner)
         self.zobrist.toggle_piece(i, j, role)
         self.evaluator.move(i, j, role)
+        if self._winner == 0 and self._is_winning_move(i, j, role):
+            self._winner = role
         self.current_player = -role
         return True
 
@@ -44,6 +49,7 @@ class Board:
         self.board[move["i"]][move["j"]] = 0
         self.zobrist.toggle_piece(move["i"], move["j"], move["role"])
         self.evaluator.undo(move["i"], move["j"])
+        self._winner = self._winner_history.pop()
         # Restore the player who made the undone move.
         self.current_player = move["role"]
         return True
@@ -62,16 +68,7 @@ class Board:
         return not any(cell == 0 for row in self.board for cell in row)
 
     def get_winner(self) -> int:
-        directions = ((1, 0), (0, 1), (1, 1), (1, -1))
-        for i in range(self.size):
-            for j in range(self.size):
-                role = self.board[i][j]
-                if role == 0:
-                    continue
-                for di, dj in directions:
-                    if self._count_in_direction(i, j, di, dj, role) >= 5:
-                        return role
-        return 0
+        return self._winner
 
     def position_to_coordinate(self, position: int) -> list[int]:
         return [position // self.size, position % self.size]
@@ -109,6 +106,16 @@ class Board:
                 break
             count += 1
         return count
+
+    def _is_winning_move(self, i: int, j: int, role: int) -> bool:
+        directions = ((1, 0), (0, 1), (1, 1), (1, -1))
+        return any(
+            self._count_in_direction(i, j, di, dj, role)
+            + self._count_in_direction(i, j, -di, -dj, role)
+            - 1
+            >= 5
+            for di, dj in directions
+        )
 
     def _nearby_valid_moves(self) -> list[list[int]]:
         occupied = [(move["i"], move["j"]) for move in self.history]

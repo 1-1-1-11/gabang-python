@@ -20,6 +20,24 @@ WINS = [
 ]
 
 
+def scan_winner(board: Board) -> int:
+    directions = ((1, 0), (0, 1), (1, 1), (1, -1))
+    for i in range(board.size):
+        for j in range(board.size):
+            role = board.board[i][j]
+            if role == 0:
+                continue
+            for di, dj in directions:
+                count = 0
+                while 0 <= i + di * count < board.size and 0 <= j + dj * count < board.size:
+                    if board.board[i + di * count][j + dj * count] != role:
+                        break
+                    count += 1
+                if count >= 5:
+                    return role
+    return 0
+
+
 def test_board_initializes_empty_grid():
     board = Board(size=15)
 
@@ -90,6 +108,19 @@ def test_undo_removes_last_move_and_restores_player():
     assert board.history == []
 
 
+def test_undo_restores_winner_after_winning_move():
+    board = Board(size=6)
+    for i, j in [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2], [2, 3], [3, 3], [3, 4], [4, 4]]:
+        board.put(i, j)
+
+    assert board.get_winner() == 1
+
+    board.undo()
+
+    assert board.get_winner() == 0
+    assert board.is_game_over() is False
+
+
 def test_undo_returns_false_without_history():
     board = Board(size=15)
 
@@ -103,8 +134,21 @@ def test_get_winner_matches_js_board_fixtures(size, moves, winner):
     for move in moves:
         i, j = board.position_to_coordinate(move)
         board.put(i, j)
+        assert board.get_winner() == scan_winner(board)
 
     assert board.get_winner() == winner
+
+
+def test_get_winner_uses_latest_move_but_matches_full_scan_for_split_line():
+    board = Board(size=9)
+    for i, j, role in [(4, 2, 1), (0, 0, -1), (4, 3, 1), (0, 1, -1), (4, 5, 1), (0, 2, -1), (4, 6, 1)]:
+        board.put(i, j, role)
+
+    assert board.get_winner() == scan_winner(board) == 0
+
+    board.put(4, 4, 1)
+
+    assert board.get_winner() == scan_winner(board) == 1
 
 
 def test_coordinate_conversion_round_trips():
