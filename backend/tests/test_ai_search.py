@@ -90,6 +90,25 @@ def test_minmax_finds_immediate_win():
     assert path[0] == [4, 4]
 
 
+@pytest.mark.parametrize(
+    ("steps", "expected_move"),
+    [
+        ([[3, 0], [0, 0], [3, 1], [0, 1], [3, 2], [0, 2], [3, 3], [1, 0]], [3, 4]),
+        ([[0, 4], [0, 0], [1, 4], [0, 1], [2, 4], [0, 2], [3, 4], [1, 0]], [4, 4]),
+        ([[4, 0], [6, 6], [3, 1], [6, 5], [2, 2], [6, 4], [1, 3], [5, 6]], [0, 4]),
+    ],
+)
+def test_minmax_finds_forced_immediate_win_across_directions(steps, expected_move):
+    board = Board(size=7)
+    play(board, steps)
+
+    value, move, path = minmax(board, 1, depth=2)
+
+    assert value == FIVE
+    assert move == expected_move
+    assert path[0] == expected_move
+
+
 def test_vct_and_vcf_find_immediate_win():
     board = Board(size=6)
     steps = [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2], [2, 3], [3, 3], [3, 4]]
