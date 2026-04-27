@@ -28,11 +28,18 @@
           <div class="settings-grid">
             <label for="board-size-input">
               棋盘
-              <input id="board-size-input" type="number" min="5" max="25" value="15">
+              <input id="board-size-input" type="number" min="5" max="25" value="15" aria-describedby="board-size-hint">
+              <span id="board-size-hint" class="field-hint">范围 5-25，演示推荐 6-15。</span>
             </label>
             <label for="search-depth-input">
               深度
-              <input id="search-depth-input" type="number" min="1" max="8" value="4">
+              <input id="search-depth-input" type="number" min="1" max="8" value="4" aria-describedby="search-depth-hint">
+              <span id="search-depth-hint" class="field-hint">范围 1-8，深度越高 AI 思考越慢。</span>
+            </label>
+            <label for="api-base-input">
+              API 地址
+              <input id="api-base-input" type="url" value="http://127.0.0.1:8000" aria-describedby="api-base-hint">
+              <span id="api-base-hint" class="field-hint">可用 ?apiBase= 覆盖，仅支持 http(s)。</span>
             </label>
             <label class="checkbox-row" for="ai-first-input">
               <input id="ai-first-input" type="checkbox">

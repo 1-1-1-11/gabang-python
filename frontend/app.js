@@ -1,7 +1,9 @@
 const BOARD_SIZE = 15;
 const SEARCH_DEPTH = 4;
 
-const apiBase = document.body.dataset.apiBase ?? "http://127.0.0.1:8000";
+const DEFAULT_API_BASE = document.body.dataset.apiBase ?? "http://127.0.0.1:8000";
+const apiBaseInput = document.querySelector("#api-base-input");
+apiBaseInput.value = readApiBase();
 const boardElement = document.querySelector("#board");
 const statusElement = document.querySelector("#status");
 const moveListElement = document.querySelector("#move-list");
@@ -44,8 +46,26 @@ function roleName(role) {
   return "未定";
 }
 
+function normalizeApiBase(candidate) {
+  try {
+    const url = new URL(candidate);
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.origin;
+    }
+  } catch {
+    return DEFAULT_API_BASE;
+  }
+  return DEFAULT_API_BASE;
+}
+
+function readApiBase() {
+  const params = new URLSearchParams(window.location.search);
+  return normalizeApiBase(params.get("apiBase") || DEFAULT_API_BASE);
+}
+
 async function requestJson(path, options = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
+  apiBaseInput.value = normalizeApiBase(apiBaseInput.value);
+  const response = await fetch(`${apiBaseInput.value}${path}`, {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
@@ -180,6 +200,7 @@ function updateControls() {
   endButton.disabled = state.isBusy || !state.sessionId;
   boardSizeInput.disabled = state.isBusy || Boolean(state.sessionId);
   searchDepthInput.disabled = state.isBusy || Boolean(state.sessionId);
+  apiBaseInput.disabled = state.isBusy || Boolean(state.sessionId);
   aiFirstInput.disabled = state.isBusy || Boolean(state.sessionId);
 
   for (const cell of boardElement.querySelectorAll(".cell")) {

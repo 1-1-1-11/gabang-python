@@ -74,6 +74,10 @@ def test_frontend_index_wires_css_js_and_app_shell():
         "board-size-input",
         "search-depth-input",
         "ai-first-input",
+        "api-base-input",
+        "board-size-hint",
+        "search-depth-hint",
+        "api-base-hint",
         "size-value",
         "current-player-value",
         "winner-value",
@@ -90,9 +94,15 @@ def test_frontend_assets_define_board_and_api_placeholders():
 
     assert 'data-api-base="http://127.0.0.1:8000"' in html
     assert 'id="board-size-input"' in html
+    assert 'aria-describedby="board-size-hint"' in html
+    assert "范围 5-25" in html
     assert 'id="search-depth-input"' in html
+    assert 'aria-describedby="search-depth-hint"' in html
+    assert "深度越高 AI 思考越慢" in html
+    assert 'id="api-base-input"' in html
+    assert "?apiBase=" in html
     assert 'id="ai-first-input"' in html
-    assert "--board-size: 15" in css
+    assert ".field-hint" in css
     assert "grid-template-columns: repeat(var(--board-size), 1fr)" in css
     assert ".cell:hover:not(:disabled)" in css
     assert ".cell.is-latest::after" in css
@@ -150,6 +160,7 @@ def test_frontend_updates_controls_from_session_state():
     assert "endButton.disabled = state.isBusy || !state.sessionId" in js
     assert "boardSizeInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
     assert "searchDepthInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
+    assert "apiBaseInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
     assert "aiFirstInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
     assert "for (const cell of boardElement.querySelectorAll" in js
     assert "cell.disabled = state.isBusy || !state.sessionId || Boolean(state.winner)" in js
@@ -159,6 +170,15 @@ def test_frontend_updates_controls_from_session_state():
 def test_frontend_reads_start_settings_from_controls():
     js = (FRONTEND / "app.js").read_text(encoding="utf-8")
 
+    assert "function normalizeApiBase(candidate)" in js
+    assert "function readApiBase()" in js
+    assert "new URLSearchParams(window.location.search)" in js
+    assert 'params.get("apiBase")' in js
+    assert 'url.protocol === "http:" || url.protocol === "https:"' in js
+    assert "apiBaseInput.value = readApiBase()" in js
+    assert "apiBaseInput.disabled = state.isBusy || Boolean(state.sessionId)" in js
+    assert "apiBaseInput.value = normalizeApiBase(apiBaseInput.value)" in js
+    assert "fetch(`${apiBaseInput.value}${path}`" in js
     assert "function readGameSettings()" in js
     assert "size: Number(boardSizeInput.value)" in js
     assert "depth: Number(searchDepthInput.value)" in js
