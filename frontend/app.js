@@ -15,6 +15,9 @@ const sizeValue = document.querySelector("#size-value");
 const depthValue = document.querySelector("#depth-value");
 const currentPlayerValue = document.querySelector("#current-player-value");
 const winnerValue = document.querySelector("#winner-value");
+const aiScoreValue = document.querySelector("#ai-score-value");
+const aiDepthValue = document.querySelector("#ai-depth-value");
+const bestPathValue = document.querySelector("#best-path-value");
 
 const state = {
   sessionId: null,
@@ -24,6 +27,9 @@ const state = {
   currentPlayer: 1,
   size: BOARD_SIZE,
   depth: SEARCH_DEPTH,
+  score: null,
+  bestPath: [],
+  currentDepth: null,
   isBusy: false,
   status: "待开始",
 };
@@ -64,6 +70,9 @@ function applySnapshot(snapshot) {
   state.currentPlayer = snapshot.current_player;
   state.size = snapshot.size;
   state.depth = snapshot.current_depth || state.depth;
+  state.score = snapshot.score;
+  state.bestPath = snapshot.best_path ?? [];
+  state.currentDepth = snapshot.current_depth;
   renderBoard();
   updateControls();
 }
@@ -223,11 +232,21 @@ function renderMoveList() {
   );
 }
 
+function formatPath(path) {
+  if (!path.length) {
+    return "-";
+  }
+  return path.map(([row, col]) => `(${row + 1}, ${col + 1})`).join(" → ");
+}
+
 function renderStats() {
   sizeValue.textContent = `${state.size} x ${state.size}`;
   depthValue.textContent = String(state.depth);
   currentPlayerValue.textContent = roleName(state.currentPlayer);
   winnerValue.textContent = roleName(state.winner);
+  aiScoreValue.textContent = state.score ?? "-";
+  aiDepthValue.textContent = state.currentDepth ?? "-";
+  bestPathValue.textContent = formatPath(state.bestPath);
 }
 
 function renderBoard() {

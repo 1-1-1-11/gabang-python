@@ -77,6 +77,9 @@ def test_frontend_index_wires_css_js_and_app_shell():
         "size-value",
         "current-player-value",
         "winner-value",
+        "ai-score-value",
+        "ai-depth-value",
+        "best-path-value",
     }.issubset(ids)
 
 
@@ -113,11 +116,16 @@ def test_frontend_renders_api_snapshots():
     assert "function applySnapshot(snapshot)" in js
     assert "snapshot.session_id" in js
     assert "snapshot.current_player" in js
+    assert "snapshot.score" in js
+    assert "snapshot.best_path" in js
+    assert "snapshot.current_depth" in js
     assert "state.board[row][col]" in js
     assert "latestMove()" in js
     assert "cell.classList.add(\"is-latest\")" in js
     assert "move.i + 1" in js
     assert "move.j + 1" in js
+    assert "function formatPath(path)" in js
+    assert "bestPathValue.textContent = formatPath(state.bestPath)" in js
 
 
 def test_frontend_handles_busy_state_and_non_json_errors():

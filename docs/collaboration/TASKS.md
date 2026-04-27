@@ -56,7 +56,7 @@
 | Task 20.2: 基础 Redis SessionStore | Redis 会话准备 | 已完成，待提交 | 实现可选 Redis 会话读写与序列化 | 自动测试、可选 Redis 验收 |
 | Task 20.3: Redis 生命周期与文档 | Redis 会话准备 | 已完成，待提交 | 验证 Redis 后端基础生命周期并补充部署说明 | 自动测试、文档复现 |
 | Task 21.1: 前端落子可读性 | 前端体验增强 | 已完成，待提交 | 最近一步高亮、1-based 落子记录、空格 hover | E2E、浏览器实测 |
-| Task 21.2: AI 信息展示 | 前端体验增强 | 待执行 | 展示 score、best_path、current_depth | E2E、浏览器实测 |
+| Task 21.2: AI 信息展示 | 前端体验增强 | 已完成，待提交 | 展示 score、best_path、current_depth | E2E、浏览器实测 |
 | Task 21.3: 配置体验 | 前端体验增强 | 待执行 | 优化 size/depth/API 地址配置与提示 | E2E、浏览器实测 |
 | Task 22.1: README 最终收敛 | 验收演示交付 | 待执行 | README 反映 E2E、AI 基准、Redis 可选能力 | 文档复现 |
 | Task 22.2: TASKS 台账校准 | 验收演示交付 | 待执行 | 对齐 Task 18-22 状态、提交、审查与验收结果 | 台账一致 |

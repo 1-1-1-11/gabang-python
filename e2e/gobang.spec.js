@@ -33,6 +33,9 @@ test("plays the main game path", async ({ page }) => {
 
   await expect(status).toHaveText("待开始");
   await expect(board.locator(".cell")).toHaveCount(225);
+  await expect(page.locator("#ai-score-value")).toHaveText("-");
+  await expect(page.locator("#ai-depth-value")).toHaveText("-");
+  await expect(page.locator("#best-path-value")).toHaveText("-");
   await expect(startButton).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -54,6 +57,9 @@ test("plays the main game path", async ({ page }) => {
   await board.locator('.cell[data-row="2"][data-col="2"]').click();
 
   await expect(status).toHaveText("进行中");
+  await expect(page.locator("#ai-score-value")).not.toHaveText("-");
+  await expect(page.locator("#ai-depth-value")).toHaveText("1");
+  await expect(page.locator("#best-path-value")).toHaveText(/^(?:\([1-9]\d*, [1-9]\d*\))(?: → \([1-9]\d*, [1-9]\d*\))*$/);
   await expect(board.locator(".stone")).toHaveCount(2);
   await expect(page.locator("#move-list li")).toHaveCount(2);
   await expect(page.locator("#move-list li").first()).toContainText("黑方 (3, 3)");
