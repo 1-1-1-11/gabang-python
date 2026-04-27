@@ -50,16 +50,21 @@
 
 ## 下一阶段计划
 
+新阶段详细计划见：`docs/collaboration/任务计划.md`。
+
 | 任务 | 阶段 | 状态 | 目标 | 验收重点 |
 | --- | --- | --- | --- | --- |
-| Task 22.3: CLAUDE.md 项目指南更新 | 验收演示交付 | 进行中 | 更新 Node 工具链、Redis、AI 基准协作指南 | 文档一致 |
+| Task 23.A: 协作机制与任务计划落地 | 产品化升级 | 已完成待提交 | 创建可执行任务计划，固化 subagent 审查、commit/push 和留痕规则 | `docs/collaboration/reviews/23A-collaboration-plan.md`：PASS；提交后补 commit hash 和 push 状态 |
+| Task 23.B: AI 优化基线与第一轮算法优化 | 产品化升级 | 待开始 | 建立 AI benchmark 和战术测试，再实施低风险算法优化 | benchmark 可复盘、战术不退化、相关 pytest 通过 |
+| Task 23.C: Vue3 + Vite 前端架构初始化 | 产品化升级 | 待开始 | 引入 Vue3 + Vite，建立现代前端工程结构 | npm 安装/构建通过，E2E 可访问新前端 |
+| Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 待开始 | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
+| Task 23.E: 复盘、质量收敛与留痕 | 产品化升级 | 待开始 | 汇总测试、审查、commit、push 和下一阶段路线 | 台账可追溯，无未处理 Blocker/Major |
 
 ## 记录规则
 
 - 每个有效任务开始时，把状态改为 `进行中`，并记录实际分支和 worktree。
-- 每个有效任务提交后，填写实现 commit。
+- 每个有效任务在获得用户授权后提交并填写实现 commit；Task 23 产品化升级阶段已获得用户授权：每个最小任务在测试、验收和 subagent 审查通过后，自动 commit 并 push 到远程 GitHub 留痕。
 - Claude Code 审查完成后，填写审查文件路径和 Blocker/Major 处理结果。
-- 审查处理记录提交后，必须推送任务分支到 GitHub 留痕。
-- 合回 `main` 后，把合并状态改为 `已合并`，并推送 `main` 到 GitHub。
+- 审查处理记录提交后，在授权范围内推送任务分支到 GitHub 留痕。
+- 合回 `main` 后，在授权范围内把合并状态改为 `已合并`，并推送 `main` 到 GitHub。
 - Task 6/7 只作为废弃历史记录保留，不再创建分支或 worktree。
-- 推送、合并、提交等影响远端或历史的操作需要明确授权后再执行。
