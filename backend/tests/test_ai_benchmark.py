@@ -82,7 +82,7 @@ def test_must_block_stays_within_smoke_budget():
 
     assert move == [2, 5]
     assert path[0] == move
-    assert_smoke_budget(elapsed, max_nodes=160, max_candidates=180)
+    assert_smoke_budget(elapsed, max_nodes=160, max_candidates=120)
 
 
 def test_simple_threat_sequence_stays_within_smoke_budget():

@@ -74,6 +74,24 @@ def test_evaluator_prioritizes_fives_and_block_fives():
     assert evaluator.get_moves(1) == [[6, 5], [6, 10], [7, 8]]
 
 
+def test_evaluator_limits_candidate_scan_to_nearby_empty_points():
+    evaluator = Evaluate(size=15)
+
+    assert evaluator._candidate_points() == [7 * 15 + 7]
+
+    for i, j, role in [(7, 7, 1), (2, 2, -1), (12, 12, 1)]:
+        evaluator.move(i, j, role)
+
+    candidates = evaluator._candidate_points()
+
+    assert 0 < len(candidates) < 15 * 15 - 3
+    assert evaluator.board[7][7] == 1
+    assert 7 * 15 + 7 not in candidates
+    assert 7 * 15 + 8 in candidates
+    assert 2 * 15 + 3 in candidates
+    assert 12 * 15 + 11 in candidates
+
+
 def test_board_evaluate_returns_five_for_existing_winner():
     board = Board(size=6)
     steps = [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2], [2, 3], [3, 3], [3, 4], [4, 4]]

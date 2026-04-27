@@ -76,47 +76,60 @@ class Evaluate:
 
     def _role_score(self, role: int) -> int:
         score = 0
-        for i, row in enumerate(self.board):
-            for j, value in enumerate(row):
-                if value != 0:
-                    continue
-                shapes = self._shapes_at(i, j, role)
-                for shape in shapes:
-                    score += CANDIDATE_SHAPE_SCORE.get(shape, 0)
-                if shapes.count(Shape.BLOCK_FOUR) >= 2:
-                    score += CANDIDATE_SHAPE_SCORE[Shape.FOUR]
-                if Shape.BLOCK_FOUR in shapes and Shape.THREE in shapes:
-                    score += CANDIDATE_SHAPE_SCORE[Shape.FOUR]
-                if shapes.count(Shape.THREE) >= 2:
-                    score += THREE_THREE // 10
-                if shapes.count(Shape.TWO) >= 2:
-                    score += TWO_TWO // 10
+        for point in self._candidate_points():
+            i = point // self.size
+            j = point % self.size
+            shapes = self._shapes_at(i, j, role)
+            for shape in shapes:
+                score += CANDIDATE_SHAPE_SCORE.get(shape, 0)
+            if shapes.count(Shape.BLOCK_FOUR) >= 2:
+                score += CANDIDATE_SHAPE_SCORE[Shape.FOUR]
+            if Shape.BLOCK_FOUR in shapes and Shape.THREE in shapes:
+                score += CANDIDATE_SHAPE_SCORE[Shape.FOUR]
+            if shapes.count(Shape.THREE) >= 2:
+                score += THREE_THREE // 10
+            if shapes.count(Shape.TWO) >= 2:
+                score += TWO_TWO // 10
         return score
 
     def _point_groups(self, role: int) -> dict[Shape, set[int]]:
         groups = {shape: set() for shape in Shape}
+        candidates = self._candidate_points()
         for r in (role, -role):
-            for i, row in enumerate(self.board):
-                for j, value in enumerate(row):
-                    if value != 0:
-                        continue
-                    shapes = self._shapes_at(i, j, r)
-                    point = i * self.size + j
-                    for shape in shapes:
-                        if shape != Shape.NONE:
-                            groups[shape].add(point)
-                    if shapes.count(Shape.BLOCK_FOUR) >= 2:
-                        groups[Shape.FOUR_FOUR].add(point)
-                    if Shape.BLOCK_FOUR in shapes and Shape.THREE in shapes:
-                        groups[Shape.FOUR_THREE].add(point)
-                    if shapes.count(Shape.THREE) >= 2:
-                        groups[Shape.THREE_THREE].add(point)
-                    if shapes.count(Shape.TWO) >= 2:
-                        groups[Shape.TWO_TWO].add(point)
+            for point in candidates:
+                i = point // self.size
+                j = point % self.size
+                shapes = self._shapes_at(i, j, r)
+                for shape in shapes:
+                    if shape != Shape.NONE:
+                        groups[shape].add(point)
+                if shapes.count(Shape.BLOCK_FOUR) >= 2:
+                    groups[Shape.FOUR_FOUR].add(point)
+                if Shape.BLOCK_FOUR in shapes and Shape.THREE in shapes:
+                    groups[Shape.FOUR_THREE].add(point)
+                if shapes.count(Shape.THREE) >= 2:
+                    groups[Shape.THREE_THREE].add(point)
+                if shapes.count(Shape.TWO) >= 2:
+                    groups[Shape.TWO_TWO].add(point)
         return groups
 
     def _shapes_at(self, i: int, j: int, role: int) -> list[Shape]:
         return [get_shape_fast(self.board, i, j, di, dj, role)[0] for di, dj in DIRECTIONS]
+
+    def _candidate_points(self, radius: int = 2) -> list[int]:
+        if not self.history:
+            center = self.size // 2
+            return [center * self.size + center]
+
+        points: set[int] = set()
+        for i, j, _ in self.history:
+            for di in range(-radius, radius + 1):
+                for dj in range(-radius, radius + 1):
+                    ni = i + di
+                    nj = j + dj
+                    if 0 <= ni < self.size and 0 <= nj < self.size and self.board[ni][nj] == 0:
+                        points.add(ni * self.size + nj)
+        return sorted(points)
 
     def _to_coordinates(self, points: set[int]) -> list[list[int]]:
         return [[point // self.size, point % self.size] for point in sorted(points)]
