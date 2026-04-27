@@ -51,7 +51,7 @@
 | Task 18.2: E2E 错误路径与控件状态 | 浏览器验收自动化 | 已完成，待提交 | 覆盖请求失败、非 JSON、busy、防重复操作 | E2E、全量 pytest |
 | Task 19.1: AI 搜索全局指标 | AI 性能基准化 | 已完成，待提交 | 暴露搜索调用、剪枝、深度等全局指标 | AI 测试、全量 pytest |
 | Task 19.2: AI 宽松性能阈值 | AI 性能基准化 | 已完成，待提交 | 为小棋局浅深度添加宽松耗时与指标阈值 | AI 基准、全量 pytest |
-| Task 19.3: AI 基准文档化 | AI 性能基准化 | 待执行 | 说明阈值用途和非 SLA 边界 | 文档复现、全量 pytest |
+| Task 19.3: AI 基准文档化 | AI 性能基准化 | 已完成，待提交 | 说明阈值用途和非 SLA 边界 | 文档复现、全量 pytest |
 | Task 20.1: 会话后端配置化 | Redis 会话准备 | 待执行 | 增加 memory/redis 配置入口并保留 memory 默认 | 自动测试 |
 | Task 20.2: 基础 Redis SessionStore | Redis 会话准备 | 待执行 | 实现可选 Redis 会话读写与序列化 | 自动测试、可选 Redis 验收 |
 | Task 20.3: Redis 生命周期与文档 | Redis 会话准备 | 待执行 | 验证 Redis 后端基础生命周期并补充部署说明 | 自动测试、文档复现 |

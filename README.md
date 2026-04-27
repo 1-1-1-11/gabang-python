@@ -18,6 +18,7 @@
 - `GET /api/health`
 - Python 棋盘规则：落子、悔棋、胜负判断、和棋判断、合法落点生成。
 - AI 评分与搜索：棋形识别、启发式评分、Zobrist 缓存、minmax/negamax、VCT/VCF 入口。
+- AI 搜索 smoke 基准：小棋盘、浅深度、宽松耗时和搜索指标阈值。
 - FastAPI 游戏会话接口：开局、落子、悔棋、结束会话。
 - 内存会话管理：会话 TTL、容量上限、同一会话操作锁。
 - OpenAPI response model、错误响应说明和请求示例。
@@ -27,7 +28,7 @@
 ## 当前限制
 
 - 前端仍是基础 MVP：已提供棋盘大小、搜索深度和 AI 先手设置，已有 Playwright 主路径验收，错误路径与更多状态验收仍待补充。
-- AI 强度尚未基准化：已有即时胜利、缓存等测试，但还缺少系统化攻防棋形和耗时基准。
+- AI 强度已有正确性测试和宽松 smoke 基准，但这些基准只用于发现明显回归，不代表比赛强度评估或性能 SLA。
 - 会话只保存在进程内存中：服务重启会丢失棋局，多进程部署不能共享会话。
 - 开发模式默认 CORS 允许所有来源；部署时必须用 `GOBANG_CORS_ORIGINS` 收窄允许来源。
 
@@ -132,6 +133,8 @@ npm run test:e2e
 
 `npm run test:e2e` 会启动后端服务和 `frontend/` 静态 HTTP 服务，并在 Chromium 中执行主路径验收。
 
+AI 基准测试位于 `backend/tests/test_ai_benchmark.py`，使用小棋盘、浅搜索深度和宽松阈值，只用于 smoke regression：发现搜索节点数、候选点数量或耗时出现数量级退化。耗时受硬件和系统负载影响，不应作为正式性能承诺或比赛强度评估。
+
 ## 初步验收步骤
 
 1. 安装依赖。
@@ -230,6 +233,7 @@ backend/
     test_health.py
     test_board.py
     test_ai_search.py
+    test_ai_benchmark.py
     test_game_api.py
     test_api_contract.py
     test_dev_server.py
