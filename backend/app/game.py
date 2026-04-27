@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from backend.app.board import Board
 from backend.app.minmax import minmax
+from backend.app.settings import DEFAULT_MAX_SESSIONS, DEFAULT_SESSION_TTL_SECONDS, get_max_sessions, get_session_backend, get_session_ttl_seconds
 
 
 @dataclass
@@ -20,8 +21,8 @@ class GameSession:
     lock: RLock = field(default_factory=RLock, repr=False)
 
 
-MAX_SESSIONS = 256
-SESSION_TTL_SECONDS = 60 * 60
+MAX_SESSIONS = DEFAULT_MAX_SESSIONS
+SESSION_TTL_SECONDS = DEFAULT_SESSION_TTL_SECONDS
 T = TypeVar("T")
 
 
@@ -99,7 +100,14 @@ class SessionStore:
         return self._clock() - created_at >= self.ttl_seconds
 
 
-sessions = SessionStore()
+def create_session_store() -> SessionStore:
+    backend = get_session_backend()
+    if backend == "redis":
+        raise NotImplementedError("Redis session backend is not implemented yet.")
+    return SessionStore(max_sessions=get_max_sessions(), ttl_seconds=get_session_ttl_seconds())
+
+
+sessions = create_session_store()
 
 
 def create_session(size: int, ai_first: bool, depth: int) -> tuple[str, GameSession]:

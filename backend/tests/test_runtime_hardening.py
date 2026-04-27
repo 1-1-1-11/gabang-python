@@ -7,7 +7,15 @@ from backend.app.board import Board
 from backend.app.game import GameSession, SessionStore
 from backend.app.main import app
 from backend.app.minmax import _build_cache_key
-from backend.app.settings import get_cors_origins
+from backend.app.settings import (
+    DEFAULT_MAX_SESSIONS,
+    DEFAULT_SESSION_TTL_SECONDS,
+    get_cors_origins,
+    get_max_sessions,
+    get_redis_url,
+    get_session_backend,
+    get_session_ttl_seconds,
+)
 
 
 def test_session_store_expires_old_sessions():
@@ -95,6 +103,75 @@ def test_cors_origins_blank_value_falls_back_to_wildcard(monkeypatch):
     monkeypatch.setenv("GOBANG_CORS_ORIGINS", " ,  ")
 
     assert get_cors_origins() == ["*"]
+
+
+def test_session_backend_defaults_to_memory(monkeypatch):
+    monkeypatch.delenv("GOBANG_SESSION_BACKEND", raising=False)
+
+    assert get_session_backend() == "memory"
+
+
+def test_session_backend_accepts_redis(monkeypatch):
+    monkeypatch.setenv("GOBANG_SESSION_BACKEND", " Redis ")
+
+    assert get_session_backend() == "redis"
+
+
+def test_session_backend_rejects_unknown_value(monkeypatch):
+    monkeypatch.setenv("GOBANG_SESSION_BACKEND", "sqlite")
+
+    try:
+        get_session_backend()
+    except ValueError as exc:
+        assert str(exc) == "GOBANG_SESSION_BACKEND must be 'memory' or 'redis'."
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_session_store_limits_are_configurable(monkeypatch):
+    monkeypatch.setenv("GOBANG_MAX_SESSIONS", "12")
+    monkeypatch.setenv("GOBANG_SESSION_TTL_SECONDS", "30")
+
+    assert get_max_sessions() == 12
+    assert get_session_ttl_seconds() == 30
+
+
+def test_session_store_limits_use_defaults(monkeypatch):
+    monkeypatch.delenv("GOBANG_MAX_SESSIONS", raising=False)
+    monkeypatch.delenv("GOBANG_SESSION_TTL_SECONDS", raising=False)
+
+    assert get_max_sessions() == DEFAULT_MAX_SESSIONS
+    assert get_session_ttl_seconds() == DEFAULT_SESSION_TTL_SECONDS
+
+
+def test_session_store_limits_reject_invalid_values(monkeypatch):
+    monkeypatch.setenv("GOBANG_MAX_SESSIONS", "0")
+
+    try:
+        get_max_sessions()
+    except ValueError as exc:
+        assert str(exc) == "GOBANG_MAX_SESSIONS must be a positive integer."
+    else:
+        raise AssertionError("expected ValueError")
+
+    monkeypatch.setenv("GOBANG_SESSION_TTL_SECONDS", "forever")
+
+    try:
+        get_session_ttl_seconds()
+    except ValueError as exc:
+        assert str(exc) == "GOBANG_SESSION_TTL_SECONDS must be a positive integer."
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_redis_url_has_default_and_trims_value(monkeypatch):
+    monkeypatch.delenv("GOBANG_REDIS_URL", raising=False)
+
+    assert get_redis_url() == "redis://127.0.0.1:6379/0"
+
+    monkeypatch.setenv("GOBANG_REDIS_URL", " redis://localhost:6380/1 ")
+
+    assert get_redis_url() == "redis://localhost:6380/1"
 
 
 def test_move_rejects_negative_and_out_of_board_coordinates():
