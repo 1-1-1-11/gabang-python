@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 这是五子棋 AI 的 Python 重构版，目标是以 FastAPI 后端为主承载棋盘规则、AI 搜索和游戏会话管理，并提供从零编写的静态前端骨架。
 
-远程仓库应保持 Python 重构版边界：不要引入、迁移、复制或改名提交原始 JavaScript/React 项目源码、静态资源、Node 构建配置、旧 JS 测试或原始 README 内容。新增前端代码必须是全新代码，当前前端位于 `frontend/`，不依赖 Node 构建工具。
+远程仓库应保持 Python 重构版边界：不要引入、迁移、复制或改名提交原始 JavaScript/React 项目源码、静态资源、旧 Node 构建配置、旧 JS 测试或原始 README 内容。新增前端代码必须是全新代码，当前前端位于 `frontend/`，不依赖 Node 构建工具。当前 Node 配置仅允许用于全新 Playwright E2E/工具链，不参与前端构建，也不代表恢复旧 JS 项目。
 
 ## 常用命令
 
@@ -35,6 +35,14 @@ py -m backend.dev_server --host 0.0.0.0 --port 9000 --reload
 py -m pytest backend/tests -q
 ```
 
+运行 Playwright E2E：
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
 运行单个测试文件：
 
 ```bash
@@ -47,26 +55,32 @@ py -m pytest backend/tests/test_game_api.py -q
 py -m pytest backend/tests/test_game_api.py::test_move_places_player_move_and_ai_reply -q
 ```
 
-查看静态前端：启动后端后，在浏览器打开 `frontend/index.html`。前端默认通过 `body[data-api-base]` 访问 `http://127.0.0.1:8000`。
+查看静态前端：启动后端后，在浏览器打开 `frontend/index.html`。前端默认通过 `body[data-api-base]` 访问 `http://127.0.0.1:8000`，也支持用 `?apiBase=http://127.0.0.1:9000` 临时覆盖；前端会把 API 地址规范化为 http(s) origin。
 
 开发环境默认 CORS 允许所有来源；部署或需要收窄来源时设置逗号分隔的 `GOBANG_CORS_ORIGINS`。
+
+会话后端默认是内存模式。可用 `GOBANG_SESSION_BACKEND=redis` 和 `GOBANG_REDIS_URL` 切换到基础 Redis 会话共享；Redis 后端不提供分布式锁，同一 session 并发写仍需由调用方或部署层避免。
+
+AI 基准位于 `backend/tests/test_ai_benchmark.py`，使用小棋盘、浅深度和宽松阈值，只用于 smoke regression，不是性能 SLA 或比赛强度评估。
 
 ## 架构概览
 
 - `backend/app/main.py` 定义 FastAPI 应用、CORS、健康检查和游戏 API：`GET /api/health`、`POST /api/games/start`、`POST /api/games/{session_id}/move`、`POST /api/games/{session_id}/undo`、`POST /api/games/{session_id}/end`。
 - `backend/app/schemas.py` 是 API request/response 的 Pydantic 合同层。游戏接口统一返回 `GameSnapshot`，字段使用 `snake_case`；错误响应为 `ErrorResponse` 的 `detail` 字段。
-- `backend/app/game.py` 管理内存游戏会话。`SessionStore` 使用 TTL、最大容量和锁；`GameSession` 持有 `Board`、AI 参数和最近一次搜索结果；`snapshot()` 负责把内部状态转换为 API 返回结构。
+- `backend/app/game.py` 管理游戏会话。默认 `SessionStore` 使用 TTL、最大容量和锁；`GameSession` 持有 `Board`、AI 参数和最近一次搜索结果；`snapshot()` 负责把内部状态转换为 API 返回结构。可选 Redis 后端由配置工厂创建，用于基础跨进程会话共享。
 - `backend/app/board.py` 是棋盘规则核心，负责落子、悔棋、胜负判断、坐标转换、候选落点、局面评分入口和 Zobrist 哈希维护。棋子角色用 `1` 和 `-1` 表示，空位为 `0`。
 - `backend/app/evaluation.py` 与 `backend/app/shape.py` 实现棋形识别、候选点分组和启发式评分。终局五连分数由 `Board.evaluate()` 处理，候选空点评分由 `CANDIDATE_SHAPE_SCORE` 处理。
-- `backend/app/minmax.py` 实现 negamax/alpha-beta 搜索，提供 `minmax()`、`vct()`、`vcf()`，并通过 `backend/app/cache.py` 按棋盘哈希、角色、剩余深度和算杀模式缓存搜索结果。
+- `backend/app/minmax.py` 实现 negamax/alpha-beta 搜索，提供 `minmax()`、`vct()`、`vcf()`，并通过 `backend/app/cache.py` 按棋盘哈希、角色、剩余深度和算杀模式缓存搜索结果；`search_metrics` 暴露搜索调用、剪枝、深度等全局指标。
 - `backend/app/zobrist.py` 提供确定性 Zobrist 哈希，用于搜索缓存键。
+- `backend/app/redis_session_store.py` 实现可选 Redis 会话读写与序列化，默认测试使用 fake，不要求真实 Redis 服务。
 - `backend/dev_server.py` 是 uvicorn 开发服务器入口。
-- `frontend/` 是无构建工具的静态 HTML/CSS/JS 前端，已接入游戏 start/move/undo/end API，并具备基础设置 UI、状态、错误和控件禁用处理；后续计划增强浏览器验收自动化。
-- `backend/tests/` 覆盖棋盘规则、AI 搜索、健康检查、游戏 API、OpenAPI 合同、开发服务器、前端骨架和运行时边界。最近初步验收基线为 `py -m pytest backend/tests -q` 通过 59 项测试。
+- `frontend/` 是无构建工具的静态 HTML/CSS/JS 前端，已接入游戏 start/move/undo/end API，并具备设置 UI、状态、错误恢复、控件禁用、最近一步高亮、AI 搜索信息和 API 地址配置。
+- `e2e/` 是全新 Playwright 浏览器验收测试，只服务当前静态前端和 Python 后端，不复用旧 JS 项目。
+- `backend/tests/` 覆盖棋盘规则、AI 搜索、AI benchmark、健康检查、游戏 API、OpenAPI 合同、开发服务器、前端骨架、Redis 会话和运行时边界。验收演示基线为 `py -m pytest backend/tests -q` 通过 91 项测试，`npm run test:e2e` 通过 5 项浏览器测试。
 
 ## 协作记录
 
-任务台账在 `docs/collaboration/TASKS.md`。历史审查记录在 `docs/collaboration/reviews/`。下一阶段路线图按小任务推进：文档与项目状态收敛、前端验收增强、AI 能力基准化、运行时与部署准备。有效任务通常使用独立分支和 worktree，命名形如：
+任务台账在 `docs/collaboration/TASKS.md`。历史审查记录在 `docs/collaboration/reviews/`。当前已进入验收演示交付收敛阶段，后续主要维护 README/TASKS/CLAUDE 一致性，并按需扩展真实 Redis 环境验收、多实例部署演练和更强 AI 棋力评估。有效任务通常使用独立分支和 worktree，命名形如：
 
 ```text
 task/<编号>-<名称>

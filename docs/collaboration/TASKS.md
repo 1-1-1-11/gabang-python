@@ -39,6 +39,7 @@
 | Task 21.2: AI 信息展示 | `main` | 当前仓库 | 已完成 | `91a942b` | subagent 只读审查 | 已推送 main |
 | Task 21.3: 配置体验 | `main` | 当前仓库 | 已完成 | `1b6dc00` | subagent 只读审查 | 已推送 main |
 | Task 22.1: README 最终收敛 | `main` | 当前仓库 | 已完成 | `284c7ad` | subagent 只读审查 | 已推送 main |
+| Task 22.2: TASKS 台账校准 | `main` | 当前仓库 | 已完成 | `b591fa3` | subagent 只读审查 | 已推送 main |
 
 ## 已废弃任务
 
@@ -51,8 +52,7 @@
 
 | 任务 | 阶段 | 状态 | 目标 | 验收重点 |
 | --- | --- | --- | --- | --- |
-| Task 22.2: TASKS 台账校准 | 验收演示交付 | 进行中 | 对齐 Task 18-22 状态、提交、审查与验收结果 | 台账一致 |
-| Task 22.3: CLAUDE.md 项目指南更新 | 验收演示交付 | 待执行 | 更新 Node 工具链、Redis、AI 基准协作指南 | 文档一致 |
+| Task 22.3: CLAUDE.md 项目指南更新 | 验收演示交付 | 进行中 | 更新 Node 工具链、Redis、AI 基准协作指南 | 文档一致 |
 
 ## 记录规则
 
