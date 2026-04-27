@@ -141,9 +141,38 @@ h1 {
 
 .cell {
   align-items: center;
+  background: transparent;
+  border: 0;
+  cursor: crosshair;
   display: flex;
   justify-content: center;
+  min-height: 0;
   min-width: 0;
+  padding: 0;
+  position: relative;
+}
+
+.cell:hover:not(:disabled) {
+  background: rgba(255, 248, 234, 0.32);
+}
+
+.cell:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.cell.is-latest::after {
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  content: "";
+  height: 86%;
+  pointer-events: none;
+  position: absolute;
+  width: 86%;
+}
+
+.cell.is-latest .stone {
+  box-shadow: 0 0 0 3px rgba(179, 59, 36, 0.3);
 }
 
 .stone {

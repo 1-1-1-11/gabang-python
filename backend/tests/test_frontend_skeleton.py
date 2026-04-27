@@ -91,6 +91,8 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'id="ai-first-input"' in html
     assert "--board-size: 15" in css
     assert "grid-template-columns: repeat(var(--board-size), 1fr)" in css
+    assert ".cell:hover:not(:disabled)" in css
+    assert ".cell.is-latest::after" in css
     assert "const BOARD_SIZE = 15" in js
     assert "renderBoard" in js
 
@@ -112,6 +114,10 @@ def test_frontend_renders_api_snapshots():
     assert "snapshot.session_id" in js
     assert "snapshot.current_player" in js
     assert "state.board[row][col]" in js
+    assert "latestMove()" in js
+    assert "cell.classList.add(\"is-latest\")" in js
+    assert "move.i + 1" in js
+    assert "move.j + 1" in js
 
 
 def test_frontend_handles_busy_state_and_non_json_errors():

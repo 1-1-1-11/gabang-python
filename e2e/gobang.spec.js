@@ -56,14 +56,21 @@ test("plays the main game path", async ({ page }) => {
   await expect(status).toHaveText("进行中");
   await expect(board.locator(".stone")).toHaveCount(2);
   await expect(page.locator("#move-list li")).toHaveCount(2);
-  await expect(page.locator("#move-list li").first()).toContainText("黑方 (2, 2)");
+  await expect(page.locator("#move-list li").first()).toContainText("黑方 (3, 3)");
   await expect(page.locator("#move-list li").nth(1)).toContainText("白方");
+  await expect(board.locator(".cell.is-latest")).toHaveCount(1);
+  await expect(board.locator(".cell.is-latest .stone")).toHaveCount(1);
+  await expect(board.locator('.cell[data-row="2"][data-col="2"]')).toBeDisabled();
+  await board.locator('.cell[data-row="0"][data-col="0"]').hover();
+  await expect(board.locator('.cell[data-row="0"][data-col="0"]')).toHaveCSS("cursor", "crosshair");
+  await expect(board.locator('.cell[data-row="0"][data-col="0"]')).toHaveCSS("background-color", "rgba(255, 248, 234, 0.32)");
   await expect(undoButton).toBeEnabled();
 
   await undoButton.click();
 
   await expect(status).toHaveText("已悔棋");
   await expect(board.locator(".stone")).toHaveCount(0);
+  await expect(board.locator(".cell.is-latest")).toHaveCount(0);
   await expect(page.locator("#move-list li")).toHaveCount(0);
   await expect(undoButton).toBeDisabled();
 

@@ -180,9 +180,17 @@ function updateControls() {
   }
 }
 
+function latestMove() {
+  return state.history.at(-1) ?? null;
+}
+
 function createCell(row, col) {
   const cell = document.createElement("button");
   cell.className = "cell";
+  const latest = latestMove();
+  if (latest?.i === row && latest?.j === col) {
+    cell.classList.add("is-latest");
+  }
   cell.type = "button";
   cell.setAttribute("role", "gridcell");
   cell.setAttribute("aria-label", `row ${row + 1}, column ${col + 1}`);
@@ -206,7 +214,10 @@ function renderMoveList() {
   moveListElement.replaceChildren(
     ...state.history.map((move, index) => {
       const item = document.createElement("li");
-      item.textContent = `${index + 1}. ${roleName(move.role)} (${move.i}, ${move.j})`;
+      if (index === state.history.length - 1) {
+        item.className = "is-latest";
+      }
+      item.textContent = `${index + 1}. ${roleName(move.role)} (${move.i + 1}, ${move.j + 1})`;
       return item;
     }),
   );
