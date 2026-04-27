@@ -12,6 +12,11 @@ def play(board: Board, steps: list[list[int]]) -> None:
         board.put(i, j)
 
 
+def play_roles(board: Board, steps: list[tuple[int, int, int]]) -> None:
+    for i, j, role in steps:
+        assert board.put(i, j, role)
+
+
 @pytest.fixture(autouse=True)
 def clear_search_cache():
     reset_search_cache()
@@ -188,6 +193,27 @@ def test_minmax_blocks_opponent_immediate_win():
     assert move == [2, 5]
     assert path[0] == move
     assert board.board[move[0]][move[1]] == 0
+    board.put(move[0], move[1], 1)
+    assert not opponent_has_immediate_win(board, -1)
+    board.undo()
+
+
+@pytest.mark.parametrize(
+    ("steps", "expected_move"),
+    [
+        ([(3, 0, 1), (3, 1, -1), (3, 2, -1), (3, 3, -1), (3, 4, -1)], [3, 5]),
+        ([(0, 3, 1), (1, 3, -1), (2, 3, -1), (3, 3, -1), (4, 3, -1)], [5, 3]),
+        ([(0, 6, 1), (1, 5, -1), (2, 4, -1), (3, 3, -1), (4, 2, -1)], [5, 1]),
+    ],
+)
+def test_minmax_blocks_forced_opponent_win_across_directions(steps, expected_move):
+    board = Board(size=7)
+    play_roles(board, steps)
+
+    value, move, path = minmax(board, 1, depth=2)
+
+    assert move == expected_move
+    assert path[0] == expected_move
     board.put(move[0], move[1], 1)
     assert not opponent_has_immediate_win(board, -1)
     board.undo()
