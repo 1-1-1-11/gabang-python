@@ -1,5 +1,5 @@
 from backend.app.board import Board
-from backend.app.game import GameSession, play_ai_move
+from backend.app.game import GameSession, play_ai_move, snapshot
 from backend.app.redis_session_store import RedisSessionStore, deserialize_session, serialize_session
 
 
@@ -88,14 +88,33 @@ def test_redis_session_store_with_session_can_remove_after_snapshot_action():
     assert store.get(session_id) is None
 
 
-def test_restored_redis_session_can_continue_ai_move_and_undo():
+def test_redis_backend_supports_start_move_undo_end_lifecycle():
     store = RedisSessionStore(FakeRedis(), key_prefix="test:")
-    session_id = store.create(make_session())
+    session = GameSession(board=Board(size=6), ai_first=False, depth=1)
+    session_id = store.create(session)
 
-    moved = store.with_session(session_id, lambda session: play_ai_move(session, depth=1))
-    restored = store.get(session_id)
+    started = store.get(session_id)
+
+    assert snapshot(session_id, started)["size"] == 6
+
+    moved = store.with_session(
+        session_id,
+        lambda active: active.board.put(2, 2, active.board.current_player) and play_ai_move(active, depth=1),
+    )
+    after_move = store.get(session_id)
 
     assert moved is True
-    assert restored.board.history[-1]["role"] == 1
-    assert restored.board.undo() is True
-    assert restored.board.history == [{"i": 3, "j": 3, "role": 1}, {"i": 3, "j": 4, "role": -1}]
+    assert len(after_move.board.history) == 2
+
+    undone = store.with_session(session_id, lambda active: [active.board.undo() for _ in range(min(2, len(active.board.history)))])
+    after_undo = store.get(session_id)
+
+    assert undone == [True, True]
+    assert after_undo.board.history == []
+
+    ended = store.with_session(session_id, lambda active: snapshot(session_id, active), remove=True)
+
+    assert ended["session_id"] == session_id
+    assert store.get(session_id) is None
+
+
