@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from backend.app.board import Board
 from backend.app.minmax import minmax
-from backend.app.settings import DEFAULT_MAX_SESSIONS, DEFAULT_SESSION_TTL_SECONDS, get_max_sessions, get_session_backend, get_session_ttl_seconds
+from backend.app.settings import DEFAULT_MAX_SESSIONS, DEFAULT_SESSION_TTL_SECONDS, get_max_sessions, get_redis_url, get_session_backend, get_session_ttl_seconds
 
 
 @dataclass
@@ -103,7 +103,11 @@ class SessionStore:
 def create_session_store() -> SessionStore:
     backend = get_session_backend()
     if backend == "redis":
-        raise NotImplementedError("Redis session backend is not implemented yet.")
+        from redis import Redis
+
+        from backend.app.redis_session_store import RedisSessionStore
+
+        return RedisSessionStore(Redis.from_url(get_redis_url()), ttl_seconds=get_session_ttl_seconds())
     return SessionStore(max_sessions=get_max_sessions(), ttl_seconds=get_session_ttl_seconds())
 
 
