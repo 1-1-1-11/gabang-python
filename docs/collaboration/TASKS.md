@@ -146,8 +146,8 @@
   - 测试结果：`11 passed`；Vite build 通过；pytest `109 passed`；Playwright `5 passed`。
   - subagent 审查文件：`docs/collaboration/reviews/C-06-e2e-startup-alignment.md`：PASS。
   - Blocker/Major 处理：无。
-  - 实现 commit：待本轮提交后记录。
-  - push 状态：待推送 main。
+  - 实现 commit：`91baa21`。
+  - push 状态：随本轮记录提交推送 main。
   - 遗留风险：C-09 后端搜索指标字段尚未实现；D 阶段视觉组件化尚未开始。
   - 下一步：C-09 搜索指标响应字段。
 
