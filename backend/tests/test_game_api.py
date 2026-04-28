@@ -5,6 +5,9 @@ from backend.app.game import MAX_SESSIONS, get_session, sessions
 from backend.app.main import app
 
 
+SEARCH_METRIC_KEYS = {"nodes", "prunes", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth", "elapsed_ms"}
+
+
 @pytest.fixture(autouse=True)
 def clear_sessions():
     sessions.clear()
@@ -27,6 +30,8 @@ def test_start_creates_empty_game_session():
     assert payload["score"] == 0
     assert payload["best_path"] == []
     assert payload["current_depth"] == 0
+    assert set(payload["search_metrics"]) == SEARCH_METRIC_KEYS
+    assert all(value == 0 for value in payload["search_metrics"].values())
     assert payload["board"] == [[0 for _ in range(6)] for _ in range(6)]
 
 
@@ -40,6 +45,9 @@ def test_start_can_let_ai_move_first():
     assert len(payload["history"]) == 1
     assert payload["history"][0]["role"] == 1
     assert payload["current_player"] == -1
+    assert payload["search_metrics"]["nodes"] > 0
+    assert payload["search_metrics"]["candidate_moves"] > 0
+    assert payload["search_metrics"]["elapsed_ms"] >= 0
     assert sum(cell != 0 for row in payload["board"] for cell in row) == 1
 
 
@@ -58,6 +66,11 @@ def test_move_places_player_move_and_ai_reply():
     assert payload["current_player"] == 1
     assert payload["current_depth"] == 1
     assert payload["best_path"]
+    assert payload["search_metrics"]["nodes"] > 0
+    assert payload["search_metrics"]["candidate_moves"] > 0
+    assert payload["search_metrics"]["leaf_nodes"] > 0
+    assert payload["search_metrics"]["max_depth"] <= 1
+    assert payload["search_metrics"]["elapsed_ms"] >= 0
 
 
 def test_undo_reverts_player_and_ai_moves():
@@ -71,6 +84,7 @@ def test_undo_reverts_player_and_ai_moves():
     payload = response.json()
     assert payload["history"] == []
     assert payload["current_player"] == 1
+    assert all(value == 0 for value in payload["search_metrics"].values())
     assert all(cell == 0 for row in payload["board"] for cell in row)
 
 

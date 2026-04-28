@@ -144,7 +144,7 @@ Invoke-RestMethod -Method Post `
   -Body '{"size":15,"ai_first":false,"depth":4}'
 ```
 
-游戏接口统一返回 `GameSnapshot`。错误响应使用 `detail` 字段。`best_path` 表示 AI 搜索主变路线，格式为若干 `[row, column]` 坐标。
+游戏接口统一返回 `GameSnapshot`。错误响应使用 `detail` 字段。`best_path` 表示 AI 搜索主变路线，格式为若干 `[row, column]` 坐标。`search_metrics` 表示最近一次 AI 搜索指标，包含 `nodes`、`prunes`、`cache_hits`、`cache_stores`、`candidate_moves`、`leaf_nodes`、`max_depth` 和 `elapsed_ms`；未发生 AI 搜索时这些值为 0。
 
 ## 会话存储配置
 

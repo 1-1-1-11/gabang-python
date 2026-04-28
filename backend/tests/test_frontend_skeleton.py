@@ -152,6 +152,7 @@ def test_frontend_renders_api_snapshots():
     assert "snapshot.score" in game_state
     assert "snapshot.best_path" in game_state
     assert "snapshot.current_depth" in game_state
+    assert "snapshot.search_metrics" in game_state
     assert "state.board[row]?.[col]" in game_state
     assert "latestMove" in game_state
     assert "'is-latest'" in app

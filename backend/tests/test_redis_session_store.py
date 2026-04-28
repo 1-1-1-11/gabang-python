@@ -36,6 +36,7 @@ def make_session() -> GameSession:
         last_score=12,
         last_best_path=[[2, 2], [4, 4]],
         last_current_depth=1,
+        last_search_metrics={"nodes": 3, "prunes": 1, "cache_hits": 0, "cache_stores": 1, "candidate_moves": 4, "leaf_nodes": 2, "max_depth": 1, "elapsed_ms": 1.5},
     )
 
 
@@ -54,6 +55,8 @@ def test_redis_session_serialization_round_trips_board_and_ai_state():
     assert restored.last_score == 12
     assert restored.last_best_path == [[2, 2], [4, 4]]
     assert restored.last_current_depth == 1
+    assert restored.last_search_metrics["nodes"] == 3
+    assert restored.last_search_metrics["elapsed_ms"] == 1.5
 
 
 def test_redis_session_store_creates_reads_updates_and_removes_sessions():
@@ -116,5 +119,4 @@ def test_redis_backend_supports_start_move_undo_end_lifecycle():
 
     assert ended["session_id"] == session_id
     assert store.get(session_id) is None
-
 

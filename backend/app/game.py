@@ -6,7 +6,7 @@ from typing import Callable, TypeVar
 from uuid import uuid4
 
 from backend.app.board import Board
-from backend.app.minmax import minmax
+from backend.app.minmax import minmax, reset_search_metrics, search_metrics
 from backend.app.settings import DEFAULT_MAX_SESSIONS, DEFAULT_SESSION_TTL_SECONDS, get_max_sessions, get_redis_url, get_session_backend, get_session_ttl_seconds
 
 
@@ -18,6 +18,7 @@ class GameSession:
     last_score: int = 0
     last_best_path: list[list[int]] = field(default_factory=list)
     last_current_depth: int = 0
+    last_search_metrics: dict[str, int | float] = field(default_factory=dict)
     lock: RLock = field(default_factory=RLock, repr=False)
 
 
@@ -114,6 +115,17 @@ def create_session_store() -> SessionStore:
 sessions = create_session_store()
 
 
+SEARCH_METRIC_KEYS = ("nodes", "prunes", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth")
+
+
+def empty_search_metrics() -> dict[str, int | float]:
+    return {**{key: 0 for key in SEARCH_METRIC_KEYS}, "elapsed_ms": 0.0}
+
+
+def copy_search_metrics(elapsed_ms: float) -> dict[str, int | float]:
+    return {**{key: int(search_metrics[key]) for key in SEARCH_METRIC_KEYS}, "elapsed_ms": elapsed_ms}
+
+
 def create_session(size: int, ai_first: bool, depth: int) -> tuple[str, GameSession]:
     session = GameSession(board=Board(size=size), ai_first=ai_first, depth=depth)
     session_id = sessions.create(session)
@@ -141,13 +153,18 @@ def play_ai_move(session: GameSession, depth: int | None = None) -> bool:
         session.last_score = board.evaluate(board.current_player)
         session.last_best_path = []
         session.last_current_depth = 0
+        session.last_search_metrics = empty_search_metrics()
         return False
 
     search_depth = depth or session.depth
+    reset_search_metrics()
+    started_at = monotonic()
     score, move, path = minmax(board, board.current_player, depth=search_depth)
+    elapsed_ms = (monotonic() - started_at) * 1000
     session.last_score = score
     session.last_best_path = path
     session.last_current_depth = search_depth
+    session.last_search_metrics = copy_search_metrics(elapsed_ms)
 
     if move is None:
         return False
@@ -166,4 +183,5 @@ def snapshot(session_id: str, session: GameSession) -> dict:
         "score": session.last_score,
         "best_path": session.last_best_path or [],
         "current_depth": session.last_current_depth,
+        "search_metrics": session.last_search_metrics or empty_search_metrics(),
     }

@@ -29,6 +29,17 @@ class MoveRecord(BaseModel):
     role: int = Field(description="Player role for the move: 1 or -1.")
 
 
+class SearchMetricsSnapshot(BaseModel):
+    nodes: int = Field(description="Search nodes visited by the latest AI search.")
+    prunes: int = Field(description="Alpha-beta prune count from the latest AI search.")
+    cache_hits: int = Field(description="Transposition cache hits from the latest AI search.")
+    cache_stores: int = Field(description="Transposition cache stores from the latest AI search.")
+    candidate_moves: int = Field(description="Candidate moves considered by the latest AI search.")
+    leaf_nodes: int = Field(description="Leaf nodes evaluated by the latest AI search.")
+    max_depth: int = Field(description="Maximum recursion depth reached by the latest AI search.")
+    elapsed_ms: float = Field(description="Elapsed wall-clock time in milliseconds for the latest AI search.")
+
+
 class GameSnapshot(BaseModel):
     session_id: str = Field(description="In-memory game session id.")
     board: list[list[int]] = Field(description="Board matrix using 0 for empty, 1 for first role, -1 for second role.")
@@ -39,6 +50,7 @@ class GameSnapshot(BaseModel):
     score: int = Field(description="Latest AI search score from the current perspective.")
     best_path: list[list[int]] = Field(description="AI search principal variation as a list of [row, column] moves.")
     current_depth: int = Field(description="Search depth used for the latest AI result.")
+    search_metrics: SearchMetricsSnapshot = Field(description="Latest AI search metrics for frontend diagnostics.")
 
 
 class ErrorResponse(BaseModel):

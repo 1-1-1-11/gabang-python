@@ -29,6 +29,7 @@ export function useGameState(options = {}) {
     score: null,
     bestPath: [],
     currentDepth: null,
+    searchMetrics: null,
     isBusy: false,
     status: "待开始",
     settings: {
@@ -65,6 +66,7 @@ export function useGameState(options = {}) {
     state.score = snapshot.score;
     state.bestPath = snapshot.best_path ?? [];
     state.currentDepth = snapshot.current_depth;
+    state.searchMetrics = snapshot.search_metrics ?? null;
   }
 
   async function startGame() {

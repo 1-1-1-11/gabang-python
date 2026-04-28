@@ -96,6 +96,10 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
 def reset_search_cache() -> None:
     _cache.clear()
     cache_hits.update({"search": 0, "total": 0, "hit": 0})
+    reset_search_metrics()
+
+
+def reset_search_metrics() -> None:
     search_metrics.update(
         {
             "nodes": 0,

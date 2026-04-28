@@ -11,8 +11,14 @@ def test_openapi_documents_game_snapshot_and_best_path():
 
     assert "GameSnapshot" in schemas
     assert "MoveRecord" in schemas
+    assert "SearchMetricsSnapshot" in schemas
     assert schemas["GameSnapshot"]["properties"]["best_path"]["description"]
     assert "AI search principal variation" in schemas["GameSnapshot"]["properties"]["best_path"]["description"]
+    assert schemas["GameSnapshot"]["properties"]["search_metrics"]["description"]
+    assert schemas["GameSnapshot"]["properties"]["search_metrics"]["$ref"].endswith("/SearchMetricsSnapshot")
+    metric_properties = schemas["SearchMetricsSnapshot"]["properties"]
+    for metric in ("nodes", "prunes", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth", "elapsed_ms"):
+        assert metric in metric_properties
 
 
 def test_game_endpoints_declare_success_and_error_models():

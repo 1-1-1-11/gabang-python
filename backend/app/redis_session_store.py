@@ -92,6 +92,7 @@ def serialize_session(session: GameSession) -> dict:
         "last_score": session.last_score,
         "last_best_path": [move.copy() for move in session.last_best_path],
         "last_current_depth": session.last_current_depth,
+        "last_search_metrics": session.last_search_metrics.copy(),
     }
 
 
@@ -108,4 +109,5 @@ def deserialize_session(data: dict) -> GameSession:
         last_score=data["last_score"],
         last_best_path=[move.copy() for move in data["last_best_path"]],
         last_current_depth=data["last_current_depth"],
+        last_search_metrics=data.get("last_search_metrics", {}).copy(),
     )

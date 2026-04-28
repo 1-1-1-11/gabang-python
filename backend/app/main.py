@@ -99,6 +99,7 @@ def undo_move(session_id: Annotated[str, Path(min_length=1)]) -> GameSnapshot:
         session.last_score = session.board.evaluate(session.board.current_player)
         session.last_best_path = []
         session.last_current_depth = 0
+        session.last_search_metrics = {}
         return snapshot(session_id, session)
 
     response = with_session(session_id, apply_undo)
