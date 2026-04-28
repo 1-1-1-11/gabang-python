@@ -157,8 +157,8 @@
   - 测试结果：`32 passed`；Vite build 通过；pytest `109 passed`；Playwright `5 passed`。
   - subagent 审查文件：`docs/collaboration/reviews/C-09-search-metrics-response.md`：PASS。
   - Blocker/Major 处理：无。
-  - 实现 commit：待本轮提交后记录。
-  - push 状态：待推送 main。
+  - 实现 commit：`b723296`。
+  - push 状态：随本轮记录提交推送 main。
   - 遗留风险：D-08 仍需把 `search_metrics` 真正展示到前端 UI；本轮只提供稳定后端字段和前端状态入口。
   - 下一步：D-01 页面整体布局。
 
