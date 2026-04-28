@@ -64,6 +64,25 @@ def test_node_tooling_runs_vue_vite_frontend():
         assert f'node_modules/{forbidden}' not in lockfile
 
 
+def test_frontend_runtime_entrypoints_use_vite_port():
+    playwright_config = (ROOT / "playwright.config.js").read_text(encoding="utf-8")
+    vite_config = (ROOT / "vite.config.js").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    claude = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    start_script = (ROOT / "start.bat").read_text(encoding="utf-8")
+    tracked_runtime_docs = [playwright_config, vite_config, readme, claude, start_script]
+
+    assert 'baseURL: "http://127.0.0.1:5173"' in playwright_config
+    assert "npm run dev:frontend -- --host 127.0.0.1 --port 5173" in playwright_config
+    assert 'url: "http://127.0.0.1:5173"' in playwright_config
+    assert "port: 5173" in vite_config
+    assert "http://127.0.0.1:5173" in readme
+    assert "http://127.0.0.1:5173" in claude
+    assert "npm run dev:frontend -- --host 127.0.0.1 --port 5173" in start_script
+    assert "http://127.0.0.1:5173/?apiBase=http://127.0.0.1:8000" in start_script
+    assert all("127.0.0.1:4173" not in content for content in tracked_runtime_docs)
+
+
 def test_frontend_index_wires_css_js_and_app_shell():
     parser = parse_index()
     scripts = [attrs for tag, attrs in parser.elements if tag == "script"]
