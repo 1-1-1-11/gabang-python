@@ -6,6 +6,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 FRONTEND = ROOT / "frontend"
 FRONTEND_SRC = FRONTEND / "src"
+API_CLIENT = FRONTEND_SRC / "api" / "client.js"
+GAME_STATE = FRONTEND_SRC / "composables" / "useGameState.js"
 
 
 class ElementCollector(HTMLParser):
@@ -72,6 +74,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert (FRONTEND_SRC / "App.vue").is_file()
     assert (FRONTEND_SRC / "main.js").is_file()
     assert (FRONTEND_SRC / "styles.css").is_file()
+    assert GAME_STATE.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -79,9 +82,12 @@ def test_frontend_assets_define_board_and_api_placeholders():
     css = (FRONTEND_SRC / "styles.css").read_text(encoding="utf-8")
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert 'data-api-base="http://127.0.0.1:8000"' in html
     assert "createApp(App" in main
+    assert 'from "./composables/useGameState"' in app
+    assert "useGameState({" in app
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -95,17 +101,20 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "grid-template-columns: repeat(var(--board-size), 1fr)" in css
     assert ".cell:hover:not(:disabled)" in css
     assert ".cell.is-latest::after" in css
-    assert "const BOARD_SIZE = 15" in app
+    assert "export const BOARD_SIZE = 15" in game_state
+    assert "reactive({" in game_state
     assert "state.board" in app
 
 
 def test_frontend_calls_game_api_endpoints():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
-    client = (FRONTEND_SRC / "api" / "client.js").read_text(encoding="utf-8")
+    client = API_CLIENT.read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
-    assert (FRONTEND_SRC / "api" / "client.js").is_file()
-    assert 'from "./api/client"' in app
-    assert "createGameApi(readApiBase(), props.defaultApiBase)" in app
+    assert API_CLIENT.is_file()
+    assert 'from "./composables/useGameState"' in app
+    assert 'from "../api/client"' in game_state
+    assert "createGameApi(readApiBase(defaultApiBase), defaultApiBase)" in game_state
     assert "fetch(" in client
     assert '"/api/health"' in client
     assert '"/api/games/start"' in client
@@ -116,15 +125,16 @@ def test_frontend_calls_game_api_endpoints():
 
 def test_frontend_renders_api_snapshots():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
-    assert "function applySnapshot(snapshot)" in app
-    assert "snapshot.session_id" in app
-    assert "snapshot.current_player" in app
-    assert "snapshot.score" in app
-    assert "snapshot.best_path" in app
-    assert "snapshot.current_depth" in app
-    assert "state.board[row]?.[col]" in app
-    assert "latestMove" in app
+    assert "function applySnapshot(snapshot)" in game_state
+    assert "snapshot.session_id" in game_state
+    assert "snapshot.current_player" in game_state
+    assert "snapshot.score" in game_state
+    assert "snapshot.best_path" in game_state
+    assert "snapshot.current_depth" in game_state
+    assert "state.board[row]?.[col]" in game_state
+    assert "latestMove" in game_state
     assert "'is-latest'" in app
     assert "move.i + 1" in app
     assert "move.j + 1" in app
@@ -134,39 +144,42 @@ def test_frontend_renders_api_snapshots():
 
 def test_frontend_handles_busy_state_and_non_json_errors():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
-    client = (FRONTEND_SRC / "api" / "client.js").read_text(encoding="utf-8")
+    client = API_CLIENT.read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert "isBusy" in app
-    assert "setBusy(true)" in app
-    assert "setBusy(false)" in app
+    assert "setBusy(true)" in game_state
+    assert "setBusy(false)" in game_state
     assert "response.text()" in client
     assert "JSON.parse" in client
     assert "throw new Error" in client
     assert "payload.detail" in client
-    assert "catch (error)" in app
-    assert "setStatus(error.message)" in app
+    assert "catch (error)" in game_state
+    assert "setStatus(error.message)" in game_state
 
 
 def test_frontend_updates_controls_from_session_state():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert ':disabled="state.isBusy || Boolean(state.sessionId)"' in app
     assert ':disabled="state.isBusy || !state.sessionId || state.history.length === 0"' in app
     assert ':disabled="state.isBusy || !state.sessionId"' in app
-    assert "function cellDisabled(row, col)" in app
-    assert "state.isBusy || !state.sessionId || Boolean(state.winner)" in app
+    assert "function cellDisabled(row, col)" in game_state
+    assert "state.isBusy || !state.sessionId || Boolean(state.winner)" in game_state
 
 
 def test_frontend_reads_start_settings_from_controls():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
-    client = (FRONTEND_SRC / "api" / "client.js").read_text(encoding="utf-8")
+    client = API_CLIENT.read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert "function normalizeApiBase(candidate" in client
-    assert "function readApiBase()" in app
-    assert "new URLSearchParams(window.location.search)" in app
-    assert 'params.get("apiBase")' in app
+    assert "function readApiBase(" in game_state
+    assert "new URLSearchParams(search)" in game_state
+    assert 'params.get("apiBase")' in game_state
     assert 'url.protocol === "http:" || url.protocol === "https:"' in client
-    assert "state.settings.apiBase = gameApi.setApiBase(state.settings.apiBase)" in app
+    assert "state.settings.apiBase = gameApi.setApiBase(state.settings.apiBase)" in game_state
     assert "fetch(`${base}${path}`" in client
     assert "size: Number(settings.size)" in client
     assert "depth: Number(settings.depth)" in client
@@ -175,10 +188,10 @@ def test_frontend_reads_start_settings_from_controls():
 
 
 def test_frontend_tracks_status_in_state():
-    app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    game_state = GAME_STATE.read_text(encoding="utf-8")
 
-    assert 'status: "待开始"' in app
-    assert "state.status = text" in app
-    assert 'setStatus("连接中")' in app
-    assert 'setStatus("AI 思考")' in app
-    assert 'setStatus("已结束")' in app
+    assert 'status: "待开始"' in game_state
+    assert "state.status = text" in game_state
+    assert 'setStatus("连接中")' in game_state
+    assert 'setStatus("AI 思考")' in game_state
+    assert 'setStatus("已结束")' in game_state

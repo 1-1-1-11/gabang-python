@@ -1,7 +1,5 @@
 <script setup>
-import { computed, reactive } from "vue";
-
-import { createGameApi, normalizeApiBase } from "./api/client";
+import { useGameState } from "./composables/useGameState";
 
 const props = defineProps({
   defaultApiBase: {
@@ -10,43 +8,9 @@ const props = defineProps({
   },
 });
 
-const BOARD_SIZE = 15;
-const SEARCH_DEPTH = 4;
-
-function emptyBoard(size) {
-  return Array.from({ length: size }, () => Array(size).fill(0));
-}
-
-function readApiBase() {
-  const params = new URLSearchParams(window.location.search);
-  return normalizeApiBase(params.get("apiBase") || props.defaultApiBase, props.defaultApiBase);
-}
-
-const gameApi = createGameApi(readApiBase(), props.defaultApiBase);
-
-const state = reactive({
-  sessionId: null,
-  board: emptyBoard(BOARD_SIZE),
-  history: [],
-  winner: 0,
-  currentPlayer: 1,
-  size: BOARD_SIZE,
-  depth: SEARCH_DEPTH,
-  score: null,
-  bestPath: [],
-  currentDepth: null,
-  isBusy: false,
-  status: "待开始",
-  settings: {
-    size: BOARD_SIZE,
-    depth: SEARCH_DEPTH,
-    apiBase: gameApi.apiBase,
-    aiFirst: false,
-  },
+const { state, boardStyle, startGame, playMove, undoMove, endGame, cellDisabled, isLatest } = useGameState({
+  defaultApiBase: props.defaultApiBase,
 });
-
-const latestMove = computed(() => state.history.at(-1) ?? null);
-const boardStyle = computed(() => ({ "--board-size": String(state.size) }));
 
 function roleName(role) {
   if (role === 1) {
@@ -56,108 +20,6 @@ function roleName(role) {
     return "白方";
   }
   return "未定";
-}
-
-function setStatus(text) {
-  state.status = text;
-}
-
-function setBusy(isBusy) {
-  state.isBusy = isBusy;
-}
-
-function syncApiBase() {
-  state.settings.apiBase = gameApi.setApiBase(state.settings.apiBase);
-}
-
-function applySnapshot(snapshot) {
-  state.sessionId = snapshot.session_id;
-  state.board = snapshot.board;
-  state.history = snapshot.history;
-  state.winner = snapshot.winner;
-  state.currentPlayer = snapshot.current_player;
-  state.size = snapshot.size;
-  state.depth = snapshot.current_depth || state.depth;
-  state.score = snapshot.score;
-  state.bestPath = snapshot.best_path ?? [];
-  state.currentDepth = snapshot.current_depth;
-}
-
-async function startGame() {
-  if (state.isBusy) {
-    return;
-  }
-  setBusy(true);
-  setStatus("连接中");
-  try {
-    syncApiBase();
-    const snapshot = await gameApi.startGame(state.settings);
-    state.depth = Number(state.settings.depth);
-    applySnapshot(snapshot);
-    setStatus("进行中");
-  } catch (error) {
-    setStatus(error.message);
-  } finally {
-    setBusy(false);
-  }
-}
-
-async function playMove(row, col) {
-  if (cellDisabled(row, col)) {
-    return;
-  }
-  setBusy(true);
-  setStatus("AI 思考");
-  try {
-    const snapshot = await gameApi.playMove(state.sessionId, [row, col], state.depth);
-    applySnapshot(snapshot);
-    setStatus(snapshot.winner ? "已结束" : "进行中");
-  } catch (error) {
-    setStatus(error.message);
-  } finally {
-    setBusy(false);
-  }
-}
-
-async function undoMove() {
-  if (state.isBusy || !state.sessionId) {
-    return;
-  }
-  setBusy(true);
-  try {
-    const snapshot = await gameApi.undoMove(state.sessionId);
-    applySnapshot(snapshot);
-    setStatus("已悔棋");
-  } catch (error) {
-    setStatus(error.message);
-  } finally {
-    setBusy(false);
-  }
-}
-
-async function endGame() {
-  if (state.isBusy || !state.sessionId) {
-    return;
-  }
-  setBusy(true);
-  try {
-    const snapshot = await gameApi.endGame(state.sessionId);
-    applySnapshot(snapshot);
-    state.sessionId = null;
-    setStatus("已结束");
-  } catch (error) {
-    setStatus(error.message);
-  } finally {
-    setBusy(false);
-  }
-}
-
-function cellDisabled(row, col) {
-  return state.isBusy || !state.sessionId || Boolean(state.winner) || state.board[row]?.[col] !== 0;
-}
-
-function isLatest(row, col) {
-  return latestMove.value?.i === row && latestMove.value?.j === col;
 }
 
 function formatPath(path) {
