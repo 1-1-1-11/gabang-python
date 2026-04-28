@@ -56,13 +56,11 @@
 | --- | --- | --- | --- | --- |
 | Task 23.A: 协作机制与任务计划落地 | 产品化升级 | 已完成 | 创建可执行任务计划，固化 subagent 审查、commit/push 和留痕规则 | `docs/collaboration/reviews/23A-collaboration-plan.md`：PASS；实现 commit `5e45d44`；已推送 main |
 | Task 23.B: AI 优化基线与第一轮算法优化 | 产品化升级 | 已完成（B-10 已审查 PASS；下一步 C-02） | 建立 AI benchmark 和战术测试，再实施低风险算法优化 | B-01 已扩展开局、中盘、立即胜、必须防、简单连续威胁 benchmark；`python -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`python -m pytest backend\tests\test_ai_search.py -q`：16 passed；审查文件 `docs/collaboration/reviews/B-01-ai-benchmark-baseline.md`：PASS；实现 commit `7c3f045`；备注 commit `1997ea9`；push 状态：已推送 main；B-02 已补充水平、垂直、反斜线立即胜固定坐标测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：19 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-02-immediate-win-tests.md`：PASS；实现 commit `4034db7`；备注 commit `79647ec`；push 状态：已推送 main；B-03 已补充水平、垂直、反斜线必须防守固定坐标测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：22 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-03-must-block-tests.md`：PASS；实现 commit `398d855`；备注 commit `5a252c2`；push 状态：已推送 main；B-04 已补充 `minmax`、`vct`、`vcf` 连续威胁路径测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：25 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-04-continuous-threat-tests.md`：PASS；实现 commit `f939166`；备注 commit `6bb8aba`；push 状态：已推送 main；B-05 已实现局部终局判断与 undo winner 恢复；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_board.py -q`：24 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：25 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：104 passed；审查文件 `docs/collaboration/reviews/B-05-local-winner-check.md`：PASS；实现 commit `0b58ba3`；备注 commit `19684cd`；push 状态：已推送 main；B-06 已实现候选点局部化，空盘回中心，内部扫描池小于全盘空点；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：26 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：105 passed；中盘 benchmark 耗时约 0.30s，低于 B-06 前约 0.42s；审查文件 `docs/collaboration/reviews/B-06-local-candidate-points.md`：PASS；实现 commit `749f97c`；备注 commit `1037d51`；push 状态：已推送 main；裸 `python` 当前命中 WindowsApps stub，详见 `.learnings/ERRORS.md` |
-| Task 23.C: Vue3 + Vite 前端架构初始化 | 产品化升级 | 进行中（C-02 已审查 PASS；下一步 C-03） | 引入 Vue3 + Vite，建立现代前端工程结构 | C-02：`npm run build` 通过；`npm run test:e2e` 5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q` 108 passed |
+| Task 23.C: Vue3 + Vite 前端架构初始化 | 产品化升级 | 进行中（C-03 已审查 PASS；下一步 C-04） | 引入 Vue3 + Vite，建立现代前端工程结构 | C-02：`npm run build` 通过；`npm run test:e2e` 5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q` 108 passed；C-03：API client 已抽出，Vite/E2E/文档端口统一到 `5173`，`npm run build` 通过，Playwright `5 passed`，pytest `108 passed` |
 | Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 待开始 | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
 | Task 23.E: 复盘、质量收敛与留痕 | 产品化升级 | 待开始 | 汇总测试、审查、commit、push 和下一阶段路线 | 台账可追溯，无未处理 Blocker/Major |
 
-> 最新状态（2026-04-28）：Task 23.B 已完成，下一步为 C-02 Vue3 + Vite 前端架构初始化。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
-
-> 最新状态（2026-04-28）：Task 23.C 已推进到 C-02 审查 PASS；下一步为 C-03 建立 API 客户端模块。
+> 最新状态（2026-04-28）：Task 23.C 已推进到 C-03 审查 PASS；下一步为 C-04 建立游戏状态管理。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
 
 ### Task 23.B 子任务留痕
 
@@ -91,8 +89,8 @@
   - 测试结果：`29 passed`、`5 passed`、`108 passed`。
   - subagent 审查文件：`docs/collaboration/reviews/B-09-cache-bound-semantics.md`：PASS。
   - Blocker/Major 处理：首轮审查指出 fail-low 不能写成 `exact`；已通过 `_cache_bound(value, alpha_start, beta)` 修复，并补充测试。
-  - 实现 commit：待本轮提交后记录。
-  - push 状态：待推送 main。
+  - 实现 commit：`338f928`。
+  - push 状态：已推送 main。
   - 遗留风险：新增测试直接覆盖 helper 语义，尚未构造真实搜索中的旧窗口/新窗口集成场景；后续 cache entry 结构再变时补。
   - 下一步：B-10 节点/时间预算预研。
 - B-10：节点/时间预算预研
@@ -101,8 +99,8 @@
   - 验证方式：文档任务；核对 `backend/app/schemas.py`、`backend/app/game.py`、`backend/app/minmax.py`、`backend/tests/test_api_contract.py`、`backend/tests/test_game_api.py`、README。
   - subagent 审查文件：`docs/collaboration/reviews/B-10-budget-presearch.md`：PASS。
   - Blocker/Major 处理：无。
-  - 实现 commit：待本轮提交后记录。
-  - push 状态：待推送 main。
+  - 实现 commit：`31a4a9f`。
+  - push 状态：已推送 main。
   - 遗留风险：D-08 搜索信息展示前，需要先做 C-09 后端搜索指标响应字段，否则前端只能展示 `score`、`best_path`、`current_depth`。
   - 下一步：C-02 Vue3 + Vite 前端架构初始化。
 
@@ -114,11 +112,22 @@
   - 测试命令：`npm run build`、`npm run test:e2e`、`.\.venv\Scripts\python.exe -m pytest backend\tests -q`。
   - 测试结果：Vite build 通过；Playwright `5 passed`；pytest `108 passed`。
   - subagent 审查文件：`docs/collaboration/reviews/C-02-vue-vite-initialization.md`：PASS。
-  - Blocker/Major 处理：待审查后记录。
+  - Blocker/Major 处理：首轮审查指出缺少 review 留痕与 Node 版本契约；已补齐后通过复审。
+  - 实现 commit：`16ca6f7`。
+  - push 状态：已推送 main。
+  - 遗留风险：C-04 仍需拆出游戏状态模块；当前为架构初始化，未做 D 阶段完整视觉重做。
+  - 下一步：C-03 建立 API 客户端模块。
+- C-03：建立 API 客户端模块
+  - 状态：已完成。
+  - 实现范围：新增 `frontend/src/api/client.js`，封装 API base 规范化、JSON 请求、`health`、`startGame`、`playMove`、`undoMove`、`endGame`；`frontend/src/App.vue` 改为通过 `createGameApi()` 调用 API；`backend/tests/test_frontend_skeleton.py` 改为验证 API client 模块边界，并锁定 Vite/Playwright 端口契约；同步 `vite.config.js`、`playwright.config.js`、README、CLAUDE 和 `start.bat` 使用 `5173`。
+  - 测试命令：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_frontend_skeleton.py -q`、`npm run build`、`.\.venv\Scripts\python.exe -m pytest backend\tests -q`、`npm run test:e2e`。
+  - 测试结果：`10 passed`；Vite build 通过；pytest `108 passed`；Playwright `5 passed`。
+  - subagent 审查文件：`docs/collaboration/reviews/C-03-api-client-module.md`：PASS。
+  - Blocker/Major 处理：无。
   - 实现 commit：待本轮提交后记录。
   - push 状态：待推送 main。
-  - 遗留风险：C-03/C-04 仍需拆出 API client 和游戏状态模块；当前为架构初始化，未做 D 阶段完整视觉重做。
-  - 下一步：C-03 建立 API 客户端模块。
+  - 遗留风险：C-04 仍需拆出游戏状态管理；当前任务只建立 API 客户端边界。
+  - 下一步：C-04 建立游戏状态管理。
 
 ## 记录规则
 

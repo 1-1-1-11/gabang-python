@@ -102,7 +102,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-node -e "const [major,minor]=process.versions.node.split('.').map(Number); if(!((major===20&&minor>=19)||major>20)){process.exit(1)}"
+node -e "const [major,minor]=process.versions.node.split('.').map(Number);const ok=(major===20?Math.max(0,Math.sign(minor-19)+1):0)+Math.max(0,Math.sign(major-21));process.exit(ok?0:1)"
 if errorlevel 1 (
     echo [错误] 当前 Node.js 版本不满足 Vite 要求。
     node --version
@@ -135,15 +135,15 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [6/6] 正在启动前端页面：http://127.0.0.1:4173/?apiBase=http://127.0.0.1:8000
-start "gobang frontend" cmd /k "cd /d "%~dp0" && npm run dev:frontend -- --host 127.0.0.1 --port 4173"
-start "" "http://127.0.0.1:4173/?apiBase=http://127.0.0.1:8000"
+echo [6/6] 正在启动前端页面：http://127.0.0.1:5173/?apiBase=http://127.0.0.1:8000
+start "gobang frontend" cmd /k "cd /d "%~dp0" && npm run dev:frontend -- --host 127.0.0.1 --port 5173"
+start "" "http://127.0.0.1:5173/?apiBase=http://127.0.0.1:8000"
 
 echo.
 echo 启动完成！
 echo.
 echo 浏览器地址：
-echo http://127.0.0.1:4173/?apiBase=http://127.0.0.1:8000
+echo http://127.0.0.1:5173/?apiBase=http://127.0.0.1:8000
 echo.
 echo 后端接口文档：
 echo http://127.0.0.1:8000/docs

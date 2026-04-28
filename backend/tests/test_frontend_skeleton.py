@@ -39,6 +39,8 @@ def test_frontend_uses_new_static_directory_only():
 
 def test_node_tooling_runs_vue_vite_frontend():
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    playwright_config = (ROOT / "playwright.config.js").read_text(encoding="utf-8")
+    vite_config = (ROOT / "vite.config.js").read_text(encoding="utf-8")
     scripts = package.get("scripts", {})
     dependencies = package.get("dependencies", {})
     dev_dependencies = package.get("devDependencies", {})
@@ -49,6 +51,9 @@ def test_node_tooling_runs_vue_vite_frontend():
     assert scripts["preview:frontend"] == "vite preview"
     assert scripts["test:e2e"] == "playwright test"
     assert scripts["test:e2e:headed"] == "playwright test --headed"
+    assert 'baseURL: "http://127.0.0.1:5173"' in playwright_config
+    assert "npm run dev:frontend -- --host 127.0.0.1 --port 5173" in playwright_config
+    assert "port: 5173" in vite_config
     assert set(dependencies) == {"vue"}
     assert {"@playwright/test", "@vitejs/plugin-vue", "vite"}.issubset(dev_dependencies)
     for forbidden in ("react", "react-dom", "webpack", "config-overrides"):
@@ -96,12 +101,17 @@ def test_frontend_assets_define_board_and_api_placeholders():
 
 def test_frontend_calls_game_api_endpoints():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    client = (FRONTEND_SRC / "api" / "client.js").read_text(encoding="utf-8")
 
-    assert "fetch(" in app
-    assert '"/api/games/start"' in app
-    assert '`/api/games/${state.sessionId}/move`' in app
-    assert '`/api/games/${state.sessionId}/undo`' in app
-    assert '`/api/games/${state.sessionId}/end`' in app
+    assert (FRONTEND_SRC / "api" / "client.js").is_file()
+    assert 'from "./api/client"' in app
+    assert "createGameApi(readApiBase(), props.defaultApiBase)" in app
+    assert "fetch(" in client
+    assert '"/api/health"' in client
+    assert '"/api/games/start"' in client
+    assert '`/api/games/${sessionId}/move`' in client
+    assert '`/api/games/${sessionId}/undo`' in client
+    assert '`/api/games/${sessionId}/end`' in client
 
 
 def test_frontend_renders_api_snapshots():
@@ -124,13 +134,15 @@ def test_frontend_renders_api_snapshots():
 
 def test_frontend_handles_busy_state_and_non_json_errors():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    client = (FRONTEND_SRC / "api" / "client.js").read_text(encoding="utf-8")
 
     assert "isBusy" in app
     assert "setBusy(true)" in app
     assert "setBusy(false)" in app
-    assert "response.text()" in app
-    assert "JSON.parse" in app
-    assert "响应格式错误" in app
+    assert "response.text()" in client
+    assert "JSON.parse" in client
+    assert "throw new Error" in client
+    assert "payload.detail" in client
     assert "catch (error)" in app
     assert "setStatus(error.message)" in app
 
@@ -147,18 +159,19 @@ def test_frontend_updates_controls_from_session_state():
 
 def test_frontend_reads_start_settings_from_controls():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    client = (FRONTEND_SRC / "api" / "client.js").read_text(encoding="utf-8")
 
-    assert "function normalizeApiBase(candidate)" in app
+    assert "function normalizeApiBase(candidate" in client
     assert "function readApiBase()" in app
     assert "new URLSearchParams(window.location.search)" in app
     assert 'params.get("apiBase")' in app
-    assert 'url.protocol === "http:" || url.protocol === "https:"' in app
-    assert "state.settings.apiBase = normalizeApiBase(state.settings.apiBase)" in app
-    assert "fetch(`${state.settings.apiBase}${path}`" in app
-    assert "size: Number(state.settings.size)" in app
-    assert "depth: Number(state.settings.depth)" in app
-    assert "ai_first: state.settings.aiFirst" in app
-    assert "JSON.stringify({ position: [row, col], depth: state.depth })" in app
+    assert 'url.protocol === "http:" || url.protocol === "https:"' in client
+    assert "state.settings.apiBase = gameApi.setApiBase(state.settings.apiBase)" in app
+    assert "fetch(`${base}${path}`" in client
+    assert "size: Number(settings.size)" in client
+    assert "depth: Number(settings.depth)" in client
+    assert "ai_first: Boolean(settings.aiFirst)" in client
+    assert "JSON.stringify({ position, depth })" in client
 
 
 def test_frontend_tracks_status_in_state():

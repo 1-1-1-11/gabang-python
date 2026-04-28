@@ -69,7 +69,7 @@ py -m pytest backend/tests/test_game_api.py -q
 py -m pytest backend/tests/test_game_api.py::test_move_places_player_move_and_ai_reply -q
 ```
 
-查看前端：启动后端后运行 `npm run dev:frontend`，在浏览器打开 `http://127.0.0.1:4173`。前端默认通过 `#app[data-api-base]` 访问 `http://127.0.0.1:8000`，也支持用 `?apiBase=http://127.0.0.1:9000` 临时覆盖；前端会把 API 地址规范化为 http(s) origin。
+查看前端：启动后端后运行 `npm run dev:frontend`，在浏览器打开 `http://127.0.0.1:5173`。前端默认通过 `#app[data-api-base]` 访问 `http://127.0.0.1:8000`，也支持用 `?apiBase=http://127.0.0.1:9000` 临时覆盖；前端会把 API 地址规范化为 http(s) origin。
 
 开发环境默认 CORS 允许所有来源；部署或需要收窄来源时设置逗号分隔的 `GOBANG_CORS_ORIGINS`。
 

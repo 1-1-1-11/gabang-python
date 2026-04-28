@@ -1,6 +1,8 @@
 <script setup>
 import { computed, reactive } from "vue";
 
+import { createGameApi, normalizeApiBase } from "./api/client";
+
 const props = defineProps({
   defaultApiBase: {
     type: String,
@@ -15,22 +17,12 @@ function emptyBoard(size) {
   return Array.from({ length: size }, () => Array(size).fill(0));
 }
 
-function normalizeApiBase(candidate) {
-  try {
-    const url = new URL(candidate);
-    if (url.protocol === "http:" || url.protocol === "https:") {
-      return url.origin;
-    }
-  } catch {
-    return props.defaultApiBase;
-  }
-  return props.defaultApiBase;
-}
-
 function readApiBase() {
   const params = new URLSearchParams(window.location.search);
-  return normalizeApiBase(params.get("apiBase") || props.defaultApiBase);
+  return normalizeApiBase(params.get("apiBase") || props.defaultApiBase, props.defaultApiBase);
 }
+
+const gameApi = createGameApi(readApiBase(), props.defaultApiBase);
 
 const state = reactive({
   sessionId: null,
@@ -48,7 +40,7 @@ const state = reactive({
   settings: {
     size: BOARD_SIZE,
     depth: SEARCH_DEPTH,
-    apiBase: readApiBase(),
+    apiBase: gameApi.apiBase,
     aiFirst: false,
   },
 });
@@ -74,23 +66,8 @@ function setBusy(isBusy) {
   state.isBusy = isBusy;
 }
 
-async function requestJson(path, options = {}) {
-  state.settings.apiBase = normalizeApiBase(state.settings.apiBase);
-  const response = await fetch(`${state.settings.apiBase}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  const text = await response.text();
-  let payload;
-  try {
-    payload = text ? JSON.parse(text) : {};
-  } catch {
-    throw new Error("响应格式错误");
-  }
-  if (!response.ok) {
-    throw new Error(payload.detail ?? "请求失败");
-  }
-  return payload;
+function syncApiBase() {
+  state.settings.apiBase = gameApi.setApiBase(state.settings.apiBase);
 }
 
 function applySnapshot(snapshot) {
@@ -113,14 +90,8 @@ async function startGame() {
   setBusy(true);
   setStatus("连接中");
   try {
-    const snapshot = await requestJson("/api/games/start", {
-      method: "POST",
-      body: JSON.stringify({
-        size: Number(state.settings.size),
-        ai_first: state.settings.aiFirst,
-        depth: Number(state.settings.depth),
-      }),
-    });
+    syncApiBase();
+    const snapshot = await gameApi.startGame(state.settings);
     state.depth = Number(state.settings.depth);
     applySnapshot(snapshot);
     setStatus("进行中");
@@ -138,10 +109,7 @@ async function playMove(row, col) {
   setBusy(true);
   setStatus("AI 思考");
   try {
-    const snapshot = await requestJson(`/api/games/${state.sessionId}/move`, {
-      method: "POST",
-      body: JSON.stringify({ position: [row, col], depth: state.depth }),
-    });
+    const snapshot = await gameApi.playMove(state.sessionId, [row, col], state.depth);
     applySnapshot(snapshot);
     setStatus(snapshot.winner ? "已结束" : "进行中");
   } catch (error) {
@@ -157,7 +125,7 @@ async function undoMove() {
   }
   setBusy(true);
   try {
-    const snapshot = await requestJson(`/api/games/${state.sessionId}/undo`, { method: "POST" });
+    const snapshot = await gameApi.undoMove(state.sessionId);
     applySnapshot(snapshot);
     setStatus("已悔棋");
   } catch (error) {
@@ -173,7 +141,7 @@ async function endGame() {
   }
   setBusy(true);
   try {
-    const snapshot = await requestJson(`/api/games/${state.sessionId}/end`, { method: "POST" });
+    const snapshot = await gameApi.endGame(state.sessionId);
     applySnapshot(snapshot);
     state.sessionId = null;
     setStatus("已结束");
