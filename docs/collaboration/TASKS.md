@@ -124,8 +124,8 @@
   - 测试结果：`10 passed`；Vite build 通过；pytest `108 passed`；Playwright `5 passed`。
   - subagent 审查文件：`docs/collaboration/reviews/C-03-api-client-module.md`：PASS。
   - Blocker/Major 处理：无。
-  - 实现 commit：待本轮提交后记录。
-  - push 状态：待推送 main。
+  - 实现 commit：`b6c2f4c`。
+  - push 状态：随本轮记录提交推送 main。
   - 遗留风险：C-04 仍需拆出游戏状态管理；当前任务只建立 API 客户端边界。
   - 下一步：C-04 建立游戏状态管理。
 
