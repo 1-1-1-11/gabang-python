@@ -18,7 +18,7 @@ module.exports = defineConfig({
       timeout: 30_000,
     },
     {
-      command: "py -m http.server 4173 --directory frontend",
+      command: "npm run dev:frontend -- --host 127.0.0.1 --port 4173",
       url: "http://127.0.0.1:4173",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
