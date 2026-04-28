@@ -60,7 +60,7 @@
 | Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 待开始（下一步 D-01） | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
 | Task 23.E: 复盘、质量收敛与留痕 | 产品化升级 | 待开始 | 汇总测试、审查、commit、push 和下一阶段路线 | 台账可追溯，无未处理 Blocker/Major |
 
-> 最新状态（2026-04-28）：Task 23.C 已完成；下一步进入 Task 23.D 的 D-01 页面整体布局。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
+> 最新状态（2026-04-28）：Task 23.C 已完成；README 当前计划重写正在对齐 C 阶段后的真实进度、痛点和 D/E 后续计划；下一步仍进入 Task 23.D 的 D-01 页面整体布局。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
 
 ### Task 23.B 子任务留痕
 
@@ -161,6 +161,18 @@
   - push 状态：随本轮记录提交推送 main。
   - 遗留风险：D-08 仍需把 `search_metrics` 真正展示到前端 UI；本轮只提供稳定后端字段和前端状态入口。
   - 下一步：D-01 页面整体布局。
+
+### Task 23 文档校准留痕
+
+- README-01：README 当前计划重写
+  - 状态：已完成。
+  - 实现范围：重写 `README.md`，补充 C 阶段完成后的真实项目状态、痛点分析、运行与验收命令、API 搜索指标说明、D/E 后续计划和仓库边界；同步 `docs/collaboration/任务计划.md` 的重估记录。
+  - 验证方式：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_frontend_skeleton.py -q`：`11 passed`；`git diff --check`：无空白错误；`README.md` 未出现旧 `127.0.0.1:4173`。
+  - subagent 审查文件：`docs/collaboration/reviews/README-01-current-plan-readme.md`：PASS。
+  - Blocker/Major 处理：初审 2 个 Major 已修复：补齐 D-13/D-14 执行顺序；D-05 限定为只映射现有 `depth`，不得新增预算参数。
+  - 实现 commit：待本次提交生成。
+  - push 状态：待本次提交后推送。
+  - 下一步：审查通过后，保持下一最小开发任务为 D-01 页面整体布局。
 
 ## 记录规则
 
