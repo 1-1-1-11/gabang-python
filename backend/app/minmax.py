@@ -1,7 +1,20 @@
+from dataclasses import dataclass
+from typing import Literal
+
 from backend.app.cache import Cache
 from backend.app.evaluation import FIVE
 
 MAX = 1_000_000_000
+CacheBound = Literal["exact", "lower", "upper"]
+
+
+@dataclass(frozen=True)
+class CacheEntry:
+    value: int
+    move: list[int] | None
+    path: list[list[int]]
+    bound: CacheBound
+
 
 cache_hits = {"search": 0, "total": 0, "hit": 0}
 search_metrics = {
@@ -39,10 +52,11 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
     cache_key = _build_cache_key(board, role, depth - current_depth, only_three, only_four)
     cached = _cache.get(cache_key)
     if cached is not None:
-        cache_hits["hit"] += 1
-        search_metrics["cache_hits"] += 1
-        cached_value, cached_move, cached_path = cached
-        return [cached_value, cached_move, path + cached_path]
+        cached_result = _cached_result(cached, alpha, beta, path)
+        if cached_result is not None:
+            cache_hits["hit"] += 1
+            search_metrics["cache_hits"] += 1
+            return cached_result
 
     moves = board.get_valuable_moves(role, current_depth, only_three, only_four)
     search_metrics["candidate_moves"] += len(moves)
@@ -50,6 +64,7 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
         search_metrics["leaf_nodes"] += 1
         return [board.evaluate(role), None, path.copy()]
 
+    alpha_start = alpha
     value = -MAX
     best_move = None
     best_path = path.copy()
@@ -70,7 +85,9 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
             break
 
     remaining_path = best_path[current_depth:]
-    _cache.put(cache_key, (value, best_move, remaining_path))
+    # FIVE is the terminal win ceiling, so a FIVE early stop is exact unless the beta window says otherwise.
+    bound = _cache_bound(value, alpha_start, beta)
+    _cache.put(cache_key, CacheEntry(value=value, move=best_move, path=remaining_path, bound=bound))
     cache_hits["total"] += 1
     search_metrics["cache_stores"] += 1
     return [value, best_move, best_path]
@@ -94,3 +111,21 @@ def reset_search_cache() -> None:
 
 def _build_cache_key(board, role: int, remaining_depth: int, only_three: bool, only_four: bool):
     return (board.size, board.hash(), role, remaining_depth, only_three, only_four)
+
+
+def _cache_bound(value: int, alpha: int, beta: int) -> CacheBound:
+    if value <= alpha:
+        return "upper"
+    if value >= beta:
+        return "lower"
+    return "exact"
+
+
+def _cached_result(entry: CacheEntry, alpha: int, beta: int, path: list[list[int]]) -> list | None:
+    if entry.bound == "exact":
+        return [entry.value, entry.move, path + entry.path]
+    if entry.bound == "lower" and entry.value >= beta:
+        return [entry.value, entry.move, path + entry.path]
+    if entry.bound == "upper" and entry.value <= alpha:
+        return [entry.value, entry.move, path + entry.path]
+    return None

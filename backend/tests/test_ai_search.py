@@ -2,7 +2,17 @@ import pytest
 
 from backend.app.board import Board
 from backend.app.evaluation import FIVE, FOUR, Evaluate
-from backend.app.minmax import cache_hits, minmax, reset_search_cache, search_metrics, vcf, vct
+from backend.app.minmax import (
+    CacheEntry,
+    _cache_bound,
+    _cached_result,
+    cache_hits,
+    minmax,
+    reset_search_cache,
+    search_metrics,
+    vcf,
+    vct,
+)
 from backend.app.shape import Shape, get_shape_fast
 from backend.app.zobrist import Zobrist
 
@@ -199,6 +209,22 @@ def test_minmax_uses_zobrist_cache_on_repeated_search():
 
     assert cache_hits["hit"] > 0
     assert second == first
+
+
+def test_cache_entry_bounds_control_reuse_by_search_window():
+    exact = CacheEntry(value=30, move=[1, 1], path=[[1, 1]], bound="exact")
+    lower = CacheEntry(value=30, move=[2, 2], path=[[2, 2]], bound="lower")
+    upper = CacheEntry(value=-30, move=[3, 3], path=[[3, 3]], bound="upper")
+
+    assert _cache_bound(value=-30, alpha=-30, beta=30) == "upper"
+    assert _cache_bound(value=30, alpha=-30, beta=30) == "lower"
+    assert _cache_bound(value=0, alpha=-30, beta=30) == "exact"
+    assert _cache_bound(value=FIVE, alpha=-1_000_000_000, beta=1_000_000_000) == "exact"
+    assert _cached_result(exact, alpha=-100, beta=100, path=[[0, 0]]) == [30, [1, 1], [[0, 0], [1, 1]]]
+    assert _cached_result(lower, alpha=-100, beta=31, path=[]) is None
+    assert _cached_result(lower, alpha=-100, beta=30, path=[]) == [30, [2, 2], [[2, 2]]]
+    assert _cached_result(upper, alpha=-31, beta=100, path=[]) is None
+    assert _cached_result(upper, alpha=-30, beta=100, path=[]) == [-30, [3, 3], [[3, 3]]]
 
 
 def test_search_metrics_track_nodes_depth_candidates_and_cache():
