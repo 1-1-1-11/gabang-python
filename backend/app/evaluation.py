@@ -25,6 +25,20 @@ CANDIDATE_SHAPE_SCORE = {
     Shape.TWO: ONE,
 }
 
+MOVE_ORDER_SHAPE_SCORE = {
+    Shape.FIVE: 1_000_000,
+    Shape.BLOCK_FIVE: 1_000_000,
+    Shape.FOUR: 100_000,
+    Shape.FOUR_FOUR: 100_000,
+    Shape.FOUR_THREE: 100_000,
+    Shape.BLOCK_FOUR: 40_000,
+    Shape.THREE_THREE: 30_000,
+    Shape.THREE: 20_000,
+    Shape.BLOCK_THREE: 3_000,
+    Shape.TWO_TWO: 2_000,
+    Shape.TWO: 1_000,
+}
+
 
 class Evaluate:
     def __init__(self, size: int = 15):
@@ -48,31 +62,31 @@ class Evaluate:
         groups = self._point_groups(role)
         fives = groups[Shape.FIVE] | groups[Shape.BLOCK_FIVE]
         if fives:
-            return self._to_coordinates(fives)
+            return self._ordered_coordinates(fives, role)
 
         fours = groups[Shape.FOUR]
         block_fours = groups[Shape.BLOCK_FOUR]
         if only_four or fours:
-            return self._to_coordinates(fours | block_fours)
+            return self._ordered_coordinates(fours | block_fours, role)
 
         four_fours = groups[Shape.FOUR_FOUR]
         if four_fours:
-            return self._to_coordinates(four_fours | block_fours)
+            return self._ordered_coordinates(four_fours | block_fours, role)
 
         four_threes = groups[Shape.FOUR_THREE]
         threes = groups[Shape.THREE]
         if four_threes:
-            return self._to_coordinates(four_threes | block_fours | threes)
+            return self._ordered_coordinates(four_threes | block_fours | threes, role)
 
         three_threes = groups[Shape.THREE_THREE]
         if three_threes:
-            return self._to_coordinates(three_threes | block_fours | threes)
+            return self._ordered_coordinates(three_threes | block_fours | threes, role)
 
         if only_three:
-            return self._to_coordinates(block_fours | threes)
+            return self._ordered_coordinates(block_fours | threes, role)
 
         candidates = block_fours | threes | groups[Shape.BLOCK_THREE] | groups[Shape.TWO_TWO] | groups[Shape.TWO]
-        return self._to_coordinates(set(sorted(candidates)[:20]) if candidates else set())
+        return self._ordered_coordinates(candidates, role, limit=20) if candidates else []
 
     def _role_score(self, role: int) -> int:
         score = 0
@@ -131,5 +145,33 @@ class Evaluate:
                         points.add(ni * self.size + nj)
         return sorted(points)
 
-    def _to_coordinates(self, points: set[int]) -> list[list[int]]:
-        return [[point // self.size, point % self.size] for point in sorted(points)]
+    def _ordered_coordinates(self, points: set[int], role: int, limit: int | None = None) -> list[list[int]]:
+        ordered = sorted(points, key=lambda point: self._move_order_key(point, role))
+        if limit is not None:
+            ordered = ordered[:limit]
+        return self._to_coordinates(ordered)
+
+    def _move_order_key(self, point: int, role: int) -> tuple[int, int, int]:
+        i = point // self.size
+        j = point % self.size
+        attack_score = self._shape_order_score(self._shapes_at(i, j, role))
+        defense_score = self._shape_order_score(self._shapes_at(i, j, -role)) * 9 // 10
+        best_score = max(attack_score, defense_score)
+        return (-best_score, -attack_score, point)
+
+    def _shape_order_score(self, shapes: list[Shape]) -> int:
+        score = max((MOVE_ORDER_SHAPE_SCORE.get(shape, 0) for shape in shapes), default=0)
+        if shapes.count(Shape.BLOCK_FOUR) >= 2:
+            score = max(score, MOVE_ORDER_SHAPE_SCORE[Shape.FOUR_FOUR])
+        if Shape.BLOCK_FOUR in shapes and Shape.THREE in shapes:
+            score = max(score, MOVE_ORDER_SHAPE_SCORE[Shape.FOUR_THREE])
+        if shapes.count(Shape.THREE) >= 2:
+            score = max(score, MOVE_ORDER_SHAPE_SCORE[Shape.THREE_THREE])
+        if shapes.count(Shape.TWO) >= 2:
+            score = max(score, MOVE_ORDER_SHAPE_SCORE[Shape.TWO_TWO])
+        return score
+
+    def _to_coordinates(self, points: list[int] | set[int]) -> list[list[int]]:
+        if isinstance(points, set):
+            points = sorted(points)
+        return [[point // self.size, point % self.size] for point in points]

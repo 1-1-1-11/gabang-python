@@ -74,6 +74,26 @@ def test_evaluator_prioritizes_fives_and_block_fives():
     assert evaluator.get_moves(1) == [[6, 5], [6, 10], [7, 8]]
 
 
+def test_evaluator_orders_own_immediate_win_before_defensive_block():
+    evaluator = Evaluate(size=9)
+    for i, j, role in [
+        (2, 0, -1),
+        (2, 1, -1),
+        (2, 2, -1),
+        (2, 3, -1),
+        (6, 4, 1),
+        (6, 5, 1),
+        (6, 6, 1),
+        (6, 7, 1),
+    ]:
+        evaluator.move(i, j, role)
+
+    moves = evaluator.get_moves(1)
+
+    assert moves[:2] == [[6, 3], [6, 8]]
+    assert [2, 4] in moves
+
+
 def test_evaluator_limits_candidate_scan_to_nearby_empty_points():
     evaluator = Evaluate(size=15)
 
@@ -130,6 +150,31 @@ def test_minmax_finds_forced_immediate_win_across_directions(steps, expected_mov
     assert value == FIVE
     assert move == expected_move
     assert path[0] == expected_move
+
+
+def test_minmax_prioritizes_own_win_before_block_for_early_prune():
+    board = Board(size=9)
+    play_roles(
+        board,
+        [
+            (2, 0, -1),
+            (2, 1, -1),
+            (2, 2, -1),
+            (2, 3, -1),
+            (6, 4, 1),
+            (6, 5, 1),
+            (6, 6, 1),
+            (6, 7, 1),
+        ],
+    )
+
+    value, move, path = minmax(board, 1, depth=2)
+
+    assert value == FIVE
+    assert move == [6, 3]
+    assert path[0] == move
+    assert search_metrics["nodes"] == 2
+    assert search_metrics["prunes"] == 1
 
 
 def test_vct_and_vcf_find_immediate_win():
