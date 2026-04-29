@@ -171,8 +171,8 @@
   - 验证方式：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_frontend_skeleton.py -q`：`11 passed`；`npm run build`：通过；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：`109 passed`；`npm run test:e2e`：`6 passed`；`git diff --check`：无空白错误。
   - subagent 审查文件：`docs/collaboration/reviews/D-01-page-layout.md`：PASS。
   - Blocker/Major 处理：无；Minor 已处理：收敛 CSS 文本断言、补充状态 pill 长文本换行。
-  - 实现 commit：待本次提交生成。
-  - push 状态：待本次提交后推送。
+  - 实现 commit：`224bdb7`。
+  - push 状态：已推送 main。
   - 下一步：D-02 棋盘组件。
 
 ### Task 23 文档校准留痕
