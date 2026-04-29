@@ -170,8 +170,8 @@
   - 验证方式：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_frontend_skeleton.py -q`：`11 passed`；`git diff --check`：无空白错误；`README.md` 未出现旧 `127.0.0.1:4173`。
   - subagent 审查文件：`docs/collaboration/reviews/README-01-current-plan-readme.md`：PASS。
   - Blocker/Major 处理：初审 2 个 Major 已修复：补齐 D-13/D-14 执行顺序；D-05 限定为只映射现有 `depth`，不得新增预算参数。
-  - 实现 commit：待本次提交生成。
-  - push 状态：待本次提交后推送。
+  - 实现 commit：`fc66808`。
+  - push 状态：已推送 main。
   - 下一步：审查通过后，保持下一最小开发任务为 D-01 页面整体布局。
 
 ## 记录规则
