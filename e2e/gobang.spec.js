@@ -29,6 +29,13 @@ function apiCallSummary(request) {
   return `${request.method()} ${url.pathname}`;
 }
 
+async function expectWithinViewport(locator, viewportWidth) {
+  const box = await locator.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewportWidth + 1);
+}
+
 test("plays the main game path", async ({ page }) => {
   const apiCalls = [];
   page.on("request", (request) => {
@@ -221,6 +228,51 @@ test("keeps the page layout stable across desktop and narrow viewports", async (
 
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollWidth).toBeLessThanOrEqual(390);
+});
+
+test("keeps active game usable without horizontal overflow on narrow screens", async ({ page }) => {
+  const viewportWidth = 360;
+  await page.setViewportSize({ width: viewportWidth, height: 780 });
+  await page.goto("/");
+
+  const board = page.locator("#board");
+  const status = page.locator("#status");
+  const controlGrid = page.locator(".control-grid");
+  const undoButton = page.locator("#undo-button");
+  const endButton = page.locator("#end-button");
+
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#difficulty-easy").click();
+  await page.locator("#start-button").click();
+
+  await expect(status).toHaveText("进行中");
+  await expect(board.locator(".cell")).toHaveCount(36);
+  await expectWithinViewport(status, viewportWidth);
+  await expectWithinViewport(board, viewportWidth);
+  await expectWithinViewport(controlGrid, viewportWidth);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
+
+  await board.locator('.cell[data-row="2"][data-col="2"]').click();
+
+  await expect(board.locator(".stone")).toHaveCount(2);
+  await expect(undoButton).toBeEnabled();
+  await expectWithinViewport(page.locator("#move-list"), viewportWidth);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
+
+  await undoButton.click();
+
+  await expect(status).toHaveText("已悔棋");
+  await expect(board.locator(".stone")).toHaveCount(0);
+  await expect(undoButton).toBeDisabled();
+  await expectWithinViewport(controlGrid, viewportWidth);
+
+  await endButton.click();
+
+  await expect(status).toHaveText("已结束");
+  await expect(page.locator("#game-result")).toBeVisible();
+  await expectWithinViewport(page.locator("#game-result"), viewportWidth);
+  await expectWithinViewport(controlGrid, viewportWidth);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
 });
 
 test("sends settings and disables controls while starting", async ({ page }) => {

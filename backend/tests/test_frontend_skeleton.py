@@ -395,3 +395,16 @@ def test_playwright_main_path_records_core_api_flow():
     assert "/undo" in spec
     assert "/end" in spec
     assert "expect(apiCalls).toHaveLength(4)" in spec
+
+
+def test_playwright_responsive_path_covers_active_game():
+    spec = E2E_SPEC.read_text(encoding="utf-8")
+    css = (FRONTEND_SRC / "styles.css").read_text(encoding="utf-8")
+
+    assert 'test("keeps active game usable without horizontal overflow on narrow screens"' in spec
+    assert "const viewportWidth = 360" in spec
+    assert "function expectWithinViewport" in spec
+    assert "document.documentElement.scrollWidth" in spec
+    assert "#game-result" in spec
+    assert "@media (max-width: 520px)" in css
+    assert "grid-template-columns: repeat(2, minmax(0, 1fr))" in css
