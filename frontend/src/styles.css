@@ -368,6 +368,38 @@ h1 {
   padding: 0 12px;
 }
 
+.game-result {
+  background:
+    linear-gradient(135deg, rgba(23, 107, 95, 0.12), rgba(196, 154, 75, 0.16)),
+    var(--panel);
+  border: 1px solid rgba(23, 107, 95, 0.26);
+  border-radius: 4px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.game-result .section-label {
+  margin-bottom: 0;
+}
+
+.game-result strong {
+  color: var(--jade);
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.game-result p:last-of-type {
+  color: var(--muted-ink);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.game-result button {
+  width: 100%;
+}
+
 .thinking-header {
   align-items: center;
   display: flex;

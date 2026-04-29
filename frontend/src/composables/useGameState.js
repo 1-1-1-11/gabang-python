@@ -32,6 +32,7 @@ export function useGameState(options = {}) {
     currentDepth: null,
     searchMetrics: null,
     errorMessage: "",
+    isGameOver: false,
     isBusy: false,
     status: "待开始",
     settings: {
@@ -75,7 +76,7 @@ export function useGameState(options = {}) {
     state.sessionId = snapshot.session_id;
     state.board = snapshot.board;
     state.history = snapshot.history;
-    state.winner = snapshot.winner;
+    state.winner = snapshot.winner ?? 0;
     state.currentPlayer = snapshot.current_player;
     state.size = snapshot.size;
     state.depth = snapshot.current_depth || state.depth;
@@ -83,6 +84,7 @@ export function useGameState(options = {}) {
     state.bestPath = snapshot.best_path ?? [];
     state.currentDepth = snapshot.current_depth;
     state.searchMetrics = snapshot.search_metrics ?? null;
+    state.isGameOver = Boolean(state.winner);
   }
 
   async function startGame() {
@@ -97,6 +99,7 @@ export function useGameState(options = {}) {
       const snapshot = await gameApi.startGame(state.settings);
       state.depth = Number(state.settings.depth);
       applySnapshot(snapshot);
+      state.isGameOver = false;
       setStatus("进行中");
     } catch (error) {
       setError(error.message);
@@ -115,7 +118,7 @@ export function useGameState(options = {}) {
     try {
       const snapshot = await gameApi.playMove(state.sessionId, [row, col], state.depth);
       applySnapshot(snapshot);
-      setStatus(snapshot.winner ? "已结束" : "进行中");
+      setStatus(state.isGameOver ? "已结束" : "进行中");
     } catch (error) {
       setError(error.message);
     } finally {
@@ -150,6 +153,7 @@ export function useGameState(options = {}) {
       const snapshot = await gameApi.endGame(state.sessionId);
       applySnapshot(snapshot);
       state.sessionId = null;
+      state.isGameOver = true;
       setStatus("已结束");
     } catch (error) {
       setError(error.message);
@@ -159,7 +163,7 @@ export function useGameState(options = {}) {
   }
 
   async function restartGame() {
-    if (state.isBusy || (!state.sessionId && state.history.length === 0 && !state.winner)) {
+    if (state.isBusy || (!state.sessionId && state.history.length === 0 && !state.winner && !state.isGameOver)) {
       return;
     }
     setBusy(true);
@@ -175,6 +179,7 @@ export function useGameState(options = {}) {
       const snapshot = await gameApi.startGame(state.settings);
       state.depth = Number(state.settings.depth);
       applySnapshot(snapshot);
+      state.isGameOver = false;
       setStatus("进行中");
     } catch (error) {
       setError(error.message);
@@ -184,7 +189,7 @@ export function useGameState(options = {}) {
   }
 
   function cellDisabled(row, col) {
-    return state.isBusy || !state.sessionId || Boolean(state.winner) || state.board[row]?.[col] !== 0;
+    return state.isBusy || !state.sessionId || state.isGameOver || state.board[row]?.[col] !== 0;
   }
 
   function isLatest(row, col) {

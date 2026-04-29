@@ -17,6 +17,7 @@ THINKING_INDICATOR_COMPONENT = FRONTEND_SRC / "components" / "ThinkingIndicator.
 MOVE_HISTORY_COMPONENT = FRONTEND_SRC / "components" / "MoveHistory.vue"
 SEARCH_INFO_COMPONENT = FRONTEND_SRC / "components" / "SearchInfo.vue"
 ERROR_BANNER_COMPONENT = FRONTEND_SRC / "components" / "ErrorBanner.vue"
+GAME_RESULT_COMPONENT = FRONTEND_SRC / "components" / "GameResult.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -112,6 +113,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert MOVE_HISTORY_COMPONENT.is_file()
     assert SEARCH_INFO_COMPONENT.is_file()
     assert ERROR_BANNER_COMPONENT.is_file()
+    assert GAME_RESULT_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -127,6 +129,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     move_history = MOVE_HISTORY_COMPONENT.read_text(encoding="utf-8")
     search_info = SEARCH_INFO_COMPONENT.read_text(encoding="utf-8")
     error_banner = ERROR_BANNER_COMPONENT.read_text(encoding="utf-8")
+    game_result = GAME_RESULT_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -137,6 +140,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'from "./components/ControlPanel.vue"' in app
     assert 'from "./components/DifficultySelect.vue"' in app
     assert 'from "./components/ErrorBanner.vue"' in app
+    assert 'from "./components/GameResult.vue"' in app
     assert 'from "./components/MoveHistory.vue"' in app
     assert 'from "./components/SearchInfo.vue"' in app
     assert 'from "./components/ThinkingIndicator.vue"' in app
@@ -216,6 +220,16 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'id="error-message"' in error_banner
     assert 'id="error-dismiss-button"' in error_banner
     assert 'role="alert"' in error_banner
+    assert "<GameResult" in app
+    assert ':winner="state.winner"' in app
+    assert ':is-game-over="state.isGameOver"' in app
+    assert ':can-restart="canRestart"' in app
+    assert '@restart-game="restartGame"' in app
+    assert 'id="game-result"' in game_result
+    assert 'id="game-result-value"' in game_result
+    assert 'id="game-result-restart-button"' in game_result
+    assert 'role="status"' in game_result
+    assert 'resultLabel(winner)' in game_result
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -309,7 +323,9 @@ def test_frontend_updates_controls_from_session_state():
 
     assert ':has-session="Boolean(state.sessionId)"' in app
     assert ':can-undo="state.history.length > 0"' in app
-    assert ':can-restart="Boolean(state.sessionId) || state.history.length > 0 || Boolean(state.winner)"' in app
+    assert "const canRestart = computed" in app
+    assert "state.isGameOver" in app
+    assert ':can-restart="canRestart"' in app
     assert ':disabled="isBusy || hasSession"' in control_panel
     assert ':disabled="isBusy || !hasSession || !canUndo"' in control_panel
     assert ':disabled="isBusy || !hasSession"' in control_panel
@@ -317,8 +333,9 @@ def test_frontend_updates_controls_from_session_state():
     assert "async function restartGame()" in game_state
     assert "gameApi.endGame(state.sessionId)" in game_state
     assert "gameApi.startGame(state.settings)" in game_state
+    assert "isGameOver: false" in game_state
     assert "function cellDisabled(row, col)" in game_state
-    assert "state.isBusy || !state.sessionId || Boolean(state.winner)" in game_state
+    assert "state.isBusy || !state.sessionId || state.isGameOver" in game_state
 
 
 def test_frontend_reads_start_settings_from_controls():
@@ -348,3 +365,5 @@ def test_frontend_tracks_status_in_state():
     assert '"连接中"' in game_state
     assert 'setStatus("AI 思考")' in game_state
     assert 'setStatus("已结束")' in game_state
+    assert "state.isGameOver = Boolean(state.winner)" in game_state
+    assert "state.isGameOver = true" in game_state

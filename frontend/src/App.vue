@@ -1,9 +1,12 @@
 <script setup>
+import { computed } from "vue";
+
 import AppLayout from "./components/AppLayout.vue";
 import Board from "./components/Board.vue";
 import ControlPanel from "./components/ControlPanel.vue";
 import DifficultySelect from "./components/DifficultySelect.vue";
 import ErrorBanner from "./components/ErrorBanner.vue";
+import GameResult from "./components/GameResult.vue";
 import MoveHistory from "./components/MoveHistory.vue";
 import SearchInfo from "./components/SearchInfo.vue";
 import ThinkingIndicator from "./components/ThinkingIndicator.vue";
@@ -19,6 +22,8 @@ const props = defineProps({
 const { state, boardStyle, startGame, playMove, undoMove, endGame, restartGame, dismissError, cellDisabled, isLatest } = useGameState({
   defaultApiBase: props.defaultApiBase,
 });
+
+const canRestart = computed(() => Boolean(state.sessionId) || state.history.length > 0 || Boolean(state.winner) || state.isGameOver);
 
 function roleName(role) {
   if (role === 1) {
@@ -104,7 +109,7 @@ function roleName(role) {
       </div>
 
       <ControlPanel
-        :can-restart="Boolean(state.sessionId) || state.history.length > 0 || Boolean(state.winner)"
+        :can-restart="canRestart"
         :can-undo="state.history.length > 0"
         :has-session="Boolean(state.sessionId)"
         :is-busy="state.isBusy"
@@ -115,6 +120,14 @@ function roleName(role) {
       />
 
       <ErrorBanner :message="state.errorMessage" @dismiss="dismissError" />
+
+      <GameResult
+        :can-restart="canRestart"
+        :is-busy="state.isBusy"
+        :is-game-over="state.isGameOver"
+        :winner="state.winner"
+        @restart-game="restartGame"
+      />
 
       <div class="panel-section">
         <p class="section-label">Thinking</p>

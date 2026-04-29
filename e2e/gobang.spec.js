@@ -55,6 +55,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#thinking-prunes-value")).toHaveText("-");
   await expect(page.locator("#move-empty")).toHaveText("暂无落子");
   await expect(page.locator("#error-banner")).toHaveCount(0);
+  await expect(page.locator("#game-result")).toHaveCount(0);
   await expect(startButton).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -125,7 +126,10 @@ test("plays the main game path", async ({ page }) => {
   await expect(apiBaseInput).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
-  await expect(restartButton).toBeDisabled();
+  await expect(restartButton).toBeEnabled();
+  await expect(page.locator("#game-result")).toBeVisible();
+  await expect(page.locator("#game-result-value")).toHaveText("本局已结束");
+  await expect(page.locator("#game-result-restart-button")).toBeEnabled();
   await expect(board.locator(".cell").first()).toBeDisabled();
 });
 
@@ -327,6 +331,79 @@ test("shows thinking state while AI move is pending and then renders search metr
   await expect(page.locator("#search-prunes-value")).toHaveText("5");
   await expect(page.locator("#search-cache-hits-value")).toHaveText("3");
   await expect(page.locator("#best-path-value")).toHaveText("(3, 4)");
+});
+
+test("shows game result after a winning move and blocks further board input", async ({ page }) => {
+  let startCount = 0;
+  let moveCount = 0;
+  let endCount = 0;
+
+  await page.route("**/api/games/start", async (route) => {
+    startCount += 1;
+    const requestBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ size: requestBody.size, current_depth: requestBody.depth })),
+    });
+  });
+
+  await page.route("**/api/games/e2e-session/move", async (route) => {
+    moveCount += 1;
+    const wonBoard = board(6);
+    for (let col = 0; col < 5; col += 1) {
+      wonBoard[0][col] = 1;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({
+        board: wonBoard,
+        history: [
+          { i: 0, j: 0, role: 1 },
+          { i: 0, j: 1, role: 1 },
+          { i: 0, j: 2, role: 1 },
+          { i: 0, j: 3, role: 1 },
+          { i: 0, j: 4, role: 1 },
+        ],
+        winner: 1,
+      })),
+    });
+  });
+
+  await page.route("**/api/games/e2e-session/end", async (route) => {
+    endCount += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ winner: 1 })),
+    });
+  });
+
+  await page.goto("/");
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#difficulty-easy").click();
+  await page.locator("#start-button").click();
+  await page.locator('#board .cell[data-row="2"][data-col="2"]').click();
+
+  await expect(page.locator("#status")).toHaveText("已结束");
+  await expect(page.locator("#winner-value")).toHaveText("黑方");
+  await expect(page.locator("#game-result")).toBeVisible();
+  await expect(page.locator("#game-result-value")).toHaveText("黑方胜");
+  await expect(page.locator("#game-result-note")).toContainText("棋盘已锁定");
+  await expect(page.locator("#game-result-restart-button")).toBeEnabled();
+  await expect(page.locator('#board .cell[data-row="1"][data-col="1"]')).toBeDisabled();
+
+  await page.evaluate(() => document.querySelector('#board .cell[data-row="1"][data-col="1"]').click());
+  expect(moveCount).toBe(1);
+
+  await page.locator("#game-result-restart-button").click();
+
+  await expect(page.locator("#status")).toHaveText("进行中");
+  await expect(page.locator("#game-result")).toHaveCount(0);
+  expect(startCount).toBe(2);
+  expect(endCount).toBe(1);
+  expect(moveCount).toBe(1);
 });
 
 test("maps difficulty presets and custom depth to existing depth setting", async ({ page }) => {
