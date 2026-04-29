@@ -57,10 +57,10 @@
 | Task 23.A: 协作机制与任务计划落地 | 产品化升级 | 已完成 | 创建可执行任务计划，固化 subagent 审查、commit/push 和留痕规则 | `docs/collaboration/reviews/23A-collaboration-plan.md`：PASS；实现 commit `5e45d44`；已推送 main |
 | Task 23.B: AI 优化基线与第一轮算法优化 | 产品化升级 | 已完成（B-10 已审查 PASS；下一步 C-02） | 建立 AI benchmark 和战术测试，再实施低风险算法优化 | B-01 已扩展开局、中盘、立即胜、必须防、简单连续威胁 benchmark；`python -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`python -m pytest backend\tests\test_ai_search.py -q`：16 passed；审查文件 `docs/collaboration/reviews/B-01-ai-benchmark-baseline.md`：PASS；实现 commit `7c3f045`；备注 commit `1997ea9`；push 状态：已推送 main；B-02 已补充水平、垂直、反斜线立即胜固定坐标测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：19 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-02-immediate-win-tests.md`：PASS；实现 commit `4034db7`；备注 commit `79647ec`；push 状态：已推送 main；B-03 已补充水平、垂直、反斜线必须防守固定坐标测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：22 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-03-must-block-tests.md`：PASS；实现 commit `398d855`；备注 commit `5a252c2`；push 状态：已推送 main；B-04 已补充 `minmax`、`vct`、`vcf` 连续威胁路径测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：25 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-04-continuous-threat-tests.md`：PASS；实现 commit `f939166`；备注 commit `6bb8aba`；push 状态：已推送 main；B-05 已实现局部终局判断与 undo winner 恢复；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_board.py -q`：24 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：25 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：104 passed；审查文件 `docs/collaboration/reviews/B-05-local-winner-check.md`：PASS；实现 commit `0b58ba3`；备注 commit `19684cd`；push 状态：已推送 main；B-06 已实现候选点局部化，空盘回中心，内部扫描池小于全盘空点；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：26 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：105 passed；中盘 benchmark 耗时约 0.30s，低于 B-06 前约 0.42s；审查文件 `docs/collaboration/reviews/B-06-local-candidate-points.md`：PASS；实现 commit `749f97c`；备注 commit `1037d51`；push 状态：已推送 main；裸 `python` 当前命中 WindowsApps stub，详见 `.learnings/ERRORS.md` |
 | Task 23.C: Vue3 + Vite 前端架构初始化 | 产品化升级 | 已完成（C-09 已审查 PASS；下一步 D-01） | 引入 Vue3 + Vite，建立现代前端工程结构 | C-02：`npm run build` 通过；`npm run test:e2e` 5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q` 108 passed；C-03：API client 已抽出，Vite/E2E/文档端口统一到 `5173`，`npm run build` 通过，Playwright `5 passed`，pytest `108 passed`；C-04：游戏状态已抽到 composable，Playwright `5 passed`，pytest `108 passed`；C-06：启动契约测试已固化，Playwright `5 passed`，pytest `109 passed`；C-09：`GameSnapshot.search_metrics` 已新增，Playwright `5 passed`，pytest `109 passed` |
-| Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 进行中（D-08 进行中） | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
+| Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 进行中（D-08 已完成；下一步 D-09） | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
 | Task 23.E: 复盘、质量收敛与留痕 | 产品化升级 | 待开始 | 汇总测试、审查、commit、push 和下一阶段路线 | 台账可追溯，无未处理 Blocker/Major |
 
-> 最新状态（2026-04-29）：Task 23.D 已完成 D-01 页面整体布局、D-02 棋盘组件、D-03 棋子组件、D-04 控制面板、D-05 难度选择、D-06 AI 思考状态和 D-07 落子记录；下一步进入 D-08 搜索信息展示。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
+> 最新状态（2026-04-29）：Task 23.D 已完成 D-01 页面整体布局、D-02 棋盘组件、D-03 棋子组件、D-04 控制面板、D-05 难度选择、D-06 AI 思考状态、D-07 落子记录和 D-08 搜索信息展示；下一步进入 D-09 错误提示。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
 
 ### Task 23.B 子任务留痕
 
@@ -245,6 +245,18 @@
   - push 状态：已推送 main。
   - 遗留风险：subagent review 因当前 usage limit 不可用，已用本地可重复门禁替代并留痕；额度恢复后可补只读复审。
   - 下一步：D-08 搜索信息展示。
+
+- D-08：搜索信息展示
+  - 状态：已完成。
+  - 实际分支/worktree：`main` / `D:\Desktop\JOYland\林杯五子棋大赛\gobang-master`。
+  - 实现范围：新增 `frontend/src/components/SearchInfo.vue`，封装 AI 评分、搜索深度、nodes、prunes、cache_hits 和 best_path 展示；`App.vue` 用组件替换内联搜索信息区并保留既有 `#ai-score-value`、`#ai-depth-value`、`#best-path-value`；Playwright 验证空占位和搜索指标渲染。
+  - 验证方式：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_frontend_skeleton.py -q`：`11 passed`；`npm run build`：通过；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：`109 passed`；`npm run test:e2e`：`9 passed`；`git diff --check`：无空白错误。
+  - 审查文件：`docs/collaboration/reviews/D-08-search-info.md`：PASS，带记录边界。
+  - Blocker/Major 处理：无。
+  - 实现 commit：`8d026d5`。
+  - push 状态：已推送 main。
+  - 遗留风险：subagent review 因当前 usage limit 不可用，已用本地可重复门禁替代并留痕；D-08 只消费既有 `search_metrics`，未新增预算参数或后端字段。
+  - 下一步：D-09 错误提示。
 
 ### Task 23 文档校准留痕
 
