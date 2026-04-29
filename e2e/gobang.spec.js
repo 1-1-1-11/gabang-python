@@ -46,6 +46,9 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#ai-score-value")).toHaveText("-");
   await expect(page.locator("#ai-depth-value")).toHaveText("-");
   await expect(page.locator("#best-path-value")).toHaveText("-");
+  await expect(page.locator("#search-nodes-value")).toHaveText("-");
+  await expect(page.locator("#search-prunes-value")).toHaveText("-");
+  await expect(page.locator("#search-cache-hits-value")).toHaveText("-");
   await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
   await expect(page.locator("#thinking-elapsed-value")).toHaveText("-");
   await expect(page.locator("#thinking-nodes-value")).toHaveText("-");
@@ -79,6 +82,9 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#ai-score-value")).not.toHaveText("-");
   await expect(page.locator("#ai-depth-value")).toHaveText("2");
   await expect(page.locator("#best-path-value")).toHaveText(/^(?:\([1-9]\d*, [1-9]\d*\))(?: → \([1-9]\d*, [1-9]\d*\))*$/);
+  await expect(page.locator("#search-nodes-value")).not.toHaveText("-");
+  await expect(page.locator("#search-prunes-value")).not.toHaveText("-");
+  await expect(page.locator("#search-cache-hits-value")).not.toHaveText("-");
   await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
   await expect(page.locator("#thinking-nodes-value")).not.toHaveText("-");
   await expect(board.locator(".stone")).toHaveCount(2);
@@ -316,6 +322,10 @@ test("shows thinking state while AI move is pending and then renders search metr
   await expect(page.locator("#thinking-elapsed-value")).not.toHaveText("-");
   await expect(page.locator("#thinking-nodes-value")).toHaveText("42");
   await expect(page.locator("#thinking-prunes-value")).toHaveText("5");
+  await expect(page.locator("#search-nodes-value")).toHaveText("42");
+  await expect(page.locator("#search-prunes-value")).toHaveText("5");
+  await expect(page.locator("#search-cache-hits-value")).toHaveText("3");
+  await expect(page.locator("#best-path-value")).toHaveText("(3, 4)");
 });
 
 test("maps difficulty presets and custom depth to existing depth setting", async ({ page }) => {

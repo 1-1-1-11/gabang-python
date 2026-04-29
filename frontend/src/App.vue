@@ -4,6 +4,7 @@ import Board from "./components/Board.vue";
 import ControlPanel from "./components/ControlPanel.vue";
 import DifficultySelect from "./components/DifficultySelect.vue";
 import MoveHistory from "./components/MoveHistory.vue";
+import SearchInfo from "./components/SearchInfo.vue";
 import ThinkingIndicator from "./components/ThinkingIndicator.vue";
 import { useGameState } from "./composables/useGameState";
 
@@ -28,12 +29,6 @@ function roleName(role) {
   return "未定";
 }
 
-function formatPath(path) {
-  if (!path.length) {
-    return "-";
-  }
-  return path.map(([row, col]) => `(${row + 1}, ${col + 1})`).join(" → ");
-}
 </script>
 
 <template>
@@ -142,20 +137,12 @@ function formatPath(path) {
         </div>
       </div>
 
-      <div class="panel-section stats-grid" aria-label="AI 搜索信息">
-        <div>
-          <span>AI 评分</span>
-          <strong id="ai-score-value">{{ state.score ?? "-" }}</strong>
-        </div>
-        <div>
-          <span>搜索深度</span>
-          <strong id="ai-depth-value">{{ state.currentDepth ?? "-" }}</strong>
-        </div>
-        <div class="wide-stat">
-          <span>主变路径</span>
-          <strong id="best-path-value">{{ formatPath(state.bestPath) }}</strong>
-        </div>
-      </div>
+      <SearchInfo
+        :best-path="state.bestPath"
+        :current-depth="state.currentDepth"
+        :metrics="state.searchMetrics"
+        :score="state.score"
+      />
 
       <MoveHistory :moves="state.history" />
     </template>

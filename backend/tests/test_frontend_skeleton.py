@@ -15,6 +15,7 @@ CONTROL_PANEL_COMPONENT = FRONTEND_SRC / "components" / "ControlPanel.vue"
 DIFFICULTY_SELECT_COMPONENT = FRONTEND_SRC / "components" / "DifficultySelect.vue"
 THINKING_INDICATOR_COMPONENT = FRONTEND_SRC / "components" / "ThinkingIndicator.vue"
 MOVE_HISTORY_COMPONENT = FRONTEND_SRC / "components" / "MoveHistory.vue"
+SEARCH_INFO_COMPONENT = FRONTEND_SRC / "components" / "SearchInfo.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -108,6 +109,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert DIFFICULTY_SELECT_COMPONENT.is_file()
     assert THINKING_INDICATOR_COMPONENT.is_file()
     assert MOVE_HISTORY_COMPONENT.is_file()
+    assert SEARCH_INFO_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -121,6 +123,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     difficulty_select = DIFFICULTY_SELECT_COMPONENT.read_text(encoding="utf-8")
     thinking_indicator = THINKING_INDICATOR_COMPONENT.read_text(encoding="utf-8")
     move_history = MOVE_HISTORY_COMPONENT.read_text(encoding="utf-8")
+    search_info = SEARCH_INFO_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -131,6 +134,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'from "./components/ControlPanel.vue"' in app
     assert 'from "./components/DifficultySelect.vue"' in app
     assert 'from "./components/MoveHistory.vue"' in app
+    assert 'from "./components/SearchInfo.vue"' in app
     assert 'from "./components/ThinkingIndicator.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
@@ -188,6 +192,19 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "roleName(move.role)" in move_history
     assert "move.i + 1" in move_history
     assert "move.j + 1" in move_history
+    assert "<SearchInfo" in app
+    assert ':best-path="state.bestPath"' in app
+    assert ':current-depth="state.currentDepth"' in app
+    assert ':metrics="state.searchMetrics"' in app
+    assert ':score="state.score"' in app
+    assert 'id="ai-score-value"' in search_info
+    assert 'id="ai-depth-value"' in search_info
+    assert 'id="best-path-value"' in search_info
+    assert 'id="search-nodes-value"' in search_info
+    assert 'id="search-prunes-value"' in search_info
+    assert 'id="search-cache-hits-value"' in search_info
+    assert '"cache_hits"' in search_info
+    assert "function formatPath(path)" in search_info
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -250,8 +267,9 @@ def test_frontend_renders_api_snapshots():
     assert "stone-latest-dot" in stone_component
     assert "move.i + 1" in move_history
     assert "move.j + 1" in move_history
-    assert "function formatPath(path)" in app
-    assert "formatPath(state.bestPath)" in app
+    search_info = SEARCH_INFO_COMPONENT.read_text(encoding="utf-8")
+    assert "function formatPath(path)" in search_info
+    assert "formatPath(bestPath)" in search_info
 
 
 def test_frontend_handles_busy_state_and_non_json_errors():
