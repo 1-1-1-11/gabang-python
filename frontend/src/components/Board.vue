@@ -1,4 +1,6 @@
 <script setup>
+import Stone from "./Stone.vue";
+
 defineProps({
   board: {
     type: Array,
@@ -52,7 +54,7 @@ const emit = defineEmits(["play-move"]);
         :disabled="cellDisabled(row, col)"
         @click="emit('play-move', row, col)"
       >
-        <span v-if="role !== 0" class="stone" :class="role === 1 ? 'black' : 'white'" aria-hidden="true"></span>
+        <Stone v-if="role !== 0" :is-latest="isLatest(row, col)" :role="role" />
       </button>
     </template>
   </div>
