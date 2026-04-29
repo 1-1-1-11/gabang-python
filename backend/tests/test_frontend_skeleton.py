@@ -8,6 +8,7 @@ FRONTEND = ROOT / "frontend"
 FRONTEND_SRC = FRONTEND / "src"
 API_CLIENT = FRONTEND_SRC / "api" / "client.js"
 GAME_STATE = FRONTEND_SRC / "composables" / "useGameState.js"
+APP_LAYOUT = FRONTEND_SRC / "components" / "AppLayout.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -94,19 +95,26 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert (FRONTEND_SRC / "main.js").is_file()
     assert (FRONTEND_SRC / "styles.css").is_file()
     assert GAME_STATE.is_file()
+    assert APP_LAYOUT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     css = (FRONTEND_SRC / "styles.css").read_text(encoding="utf-8")
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    layout = APP_LAYOUT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert 'data-api-base="http://127.0.0.1:8000"' in html
     assert "createApp(App" in main
+    assert 'from "./components/AppLayout.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
+    assert "<AppLayout>" in app
+    assert '<slot name="board"' in layout
+    assert 'class="play-surface"' in layout
+    assert 'class="side-panel"' in layout
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -117,6 +125,10 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "?apiBase=" in app
     assert 'id="ai-first-input"' in app
     assert ".field-hint" in css
+    assert ".app-shell" in css
+    assert ".play-surface" in css
+    assert ".side-panel" in css
+    assert ".board-zone" in css
     assert "grid-template-columns: repeat(var(--board-size), 1fr)" in css
     assert ".cell:hover:not(:disabled)" in css
     assert ".cell.is-latest::after" in css

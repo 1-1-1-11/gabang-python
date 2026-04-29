@@ -1,4 +1,5 @@
 <script setup>
+import AppLayout from "./components/AppLayout.vue";
 import { useGameState } from "./composables/useGameState";
 
 const props = defineProps({
@@ -31,47 +32,49 @@ function formatPath(path) {
 </script>
 
 <template>
-  <main class="app-shell" aria-label="gobang-python">
-    <section class="play-surface" aria-label="棋局">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">gobang-python</p>
-          <h1>五子棋控制台</h1>
-        </div>
-        <div id="status" class="status-pill" role="status">{{ state.status }}</div>
-      </header>
+  <AppLayout>
+    <template #eyebrow>
+      gobang-python
+    </template>
 
-      <div class="board-zone">
-        <div
-          id="board"
-          class="board"
-          :class="{ 'is-busy': state.isBusy }"
-          role="grid"
-          :aria-label="`${state.size} x ${state.size} 五子棋棋盘`"
-          :style="boardStyle"
-        >
-          <template v-for="(rowCells, row) in state.board" :key="row">
-            <button
-              v-for="(role, col) in rowCells"
-              :key="`${row}-${col}`"
-              class="cell"
-              :class="{ 'is-latest': isLatest(row, col) }"
-              type="button"
-              role="gridcell"
-              :aria-label="`row ${row + 1}, column ${col + 1}`"
-              :data-row="row"
-              :data-col="col"
-              :disabled="cellDisabled(row, col)"
-              @click="playMove(row, col)"
-            >
-              <span v-if="role !== 0" class="stone" :class="role === 1 ? 'black' : 'white'" aria-hidden="true"></span>
-            </button>
-          </template>
-        </div>
+    <template #title>
+      五子棋控制台
+    </template>
+
+    <template #status>
+      <div id="status" class="status-pill" role="status">{{ state.status }}</div>
+    </template>
+
+    <template #board>
+      <div
+        id="board"
+        class="board"
+        :class="{ 'is-busy': state.isBusy }"
+        role="grid"
+        :aria-label="`${state.size} x ${state.size} 五子棋棋盘`"
+        :style="boardStyle"
+      >
+        <template v-for="(rowCells, row) in state.board" :key="row">
+          <button
+            v-for="(role, col) in rowCells"
+            :key="`${row}-${col}`"
+            class="cell"
+            :class="{ 'is-latest': isLatest(row, col) }"
+            type="button"
+            role="gridcell"
+            :aria-label="`row ${row + 1}, column ${col + 1}`"
+            :data-row="row"
+            :data-col="col"
+            :disabled="cellDisabled(row, col)"
+            @click="playMove(row, col)"
+          >
+            <span v-if="role !== 0" class="stone" :class="role === 1 ? 'black' : 'white'" aria-hidden="true"></span>
+          </button>
+        </template>
       </div>
-    </section>
+    </template>
 
-    <aside class="side-panel" aria-label="棋局控制">
+    <template #panel>
       <div class="panel-section">
         <p class="section-label">Settings</p>
         <div class="settings-grid">
@@ -203,6 +206,6 @@ function formatPath(path) {
           </li>
         </ol>
       </div>
-    </aside>
-  </main>
+    </template>
+  </AppLayout>
 </template>

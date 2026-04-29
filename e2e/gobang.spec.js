@@ -99,6 +99,31 @@ test("plays the main game path", async ({ page }) => {
   await expect(board.locator(".cell").first()).toBeDisabled();
 });
 
+test("keeps the page layout stable across desktop and narrow viewports", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+
+  const desktopPlaySurface = await page.locator(".play-surface").boundingBox();
+  const desktopSidePanel = await page.locator(".side-panel").boundingBox();
+  expect(desktopPlaySurface).not.toBeNull();
+  expect(desktopSidePanel).not.toBeNull();
+  expect(desktopSidePanel.x).toBeGreaterThan(desktopPlaySurface.x + desktopPlaySurface.width - 1);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  const mobilePlaySurface = await page.locator(".play-surface").boundingBox();
+  const mobileSidePanel = await page.locator(".side-panel").boundingBox();
+  const mobileBoard = await page.locator("#board").boundingBox();
+  expect(mobilePlaySurface).not.toBeNull();
+  expect(mobileSidePanel).not.toBeNull();
+  expect(mobileBoard).not.toBeNull();
+  expect(mobileSidePanel.y).toBeGreaterThan(mobilePlaySurface.y + mobilePlaySurface.height - 1);
+  expect(mobileBoard.width).toBeLessThanOrEqual(390);
+
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(390);
+});
+
 test("sends settings and disables controls while starting", async ({ page }) => {
   let requestCount = 0;
   let requestBody;
