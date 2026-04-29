@@ -13,6 +13,7 @@ BOARD_COMPONENT = FRONTEND_SRC / "components" / "Board.vue"
 STONE_COMPONENT = FRONTEND_SRC / "components" / "Stone.vue"
 CONTROL_PANEL_COMPONENT = FRONTEND_SRC / "components" / "ControlPanel.vue"
 DIFFICULTY_SELECT_COMPONENT = FRONTEND_SRC / "components" / "DifficultySelect.vue"
+THINKING_INDICATOR_COMPONENT = FRONTEND_SRC / "components" / "ThinkingIndicator.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -104,6 +105,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert STONE_COMPONENT.is_file()
     assert CONTROL_PANEL_COMPONENT.is_file()
     assert DIFFICULTY_SELECT_COMPONENT.is_file()
+    assert THINKING_INDICATOR_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -115,6 +117,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     stone_component = STONE_COMPONENT.read_text(encoding="utf-8")
     control_panel = CONTROL_PANEL_COMPONENT.read_text(encoding="utf-8")
     difficulty_select = DIFFICULTY_SELECT_COMPONENT.read_text(encoding="utf-8")
+    thinking_indicator = THINKING_INDICATOR_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -124,6 +127,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'from "./components/Board.vue"' in app
     assert 'from "./components/ControlPanel.vue"' in app
     assert 'from "./components/DifficultySelect.vue"' in app
+    assert 'from "./components/ThinkingIndicator.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
     assert "<AppLayout>" in app
@@ -161,6 +165,17 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "depth: 2" in difficulty_select
     assert "depth: 4" in difficulty_select
     assert "depth: 6" in difficulty_select
+    assert "<ThinkingIndicator" in app
+    assert ':is-thinking="state.isBusy && state.status === \'AI 思考\'"' in app
+    assert ':metrics="state.searchMetrics"' in app
+    assert 'id="thinking-indicator"' in thinking_indicator
+    assert 'id="thinking-state-value"' in thinking_indicator
+    assert 'id="thinking-elapsed-value"' in thinking_indicator
+    assert 'id="thinking-nodes-value"' in thinking_indicator
+    assert 'id="thinking-prunes-value"' in thinking_indicator
+    assert "elapsed_ms" in thinking_indicator
+    assert '"nodes"' in thinking_indicator
+    assert '"prunes"' in thinking_indicator
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -215,6 +230,7 @@ def test_frontend_renders_api_snapshots():
     assert "snapshot.best_path" in game_state
     assert "snapshot.current_depth" in game_state
     assert "snapshot.search_metrics" in game_state
+    assert "state.searchMetrics" in app
     assert "state.board[row]?.[col]" in game_state
     assert "latestMove" in game_state
     assert "'is-latest'" in board_component
@@ -283,6 +299,7 @@ def test_frontend_tracks_status_in_state():
 
     assert 'status: "待开始"' in game_state
     assert "state.status = text" in game_state
-    assert 'setStatus("连接中")' in game_state
+    assert 'setStatus(state.settings.aiFirst ? "AI 思考" : "连接中")' in game_state
+    assert '"连接中"' in game_state
     assert 'setStatus("AI 思考")' in game_state
     assert 'setStatus("已结束")' in game_state

@@ -76,7 +76,7 @@ export function useGameState(options = {}) {
       return;
     }
     setBusy(true);
-    setStatus("连接中");
+    setStatus(state.settings.aiFirst ? "AI 思考" : "连接中");
     try {
       syncApiBase();
       const snapshot = await gameApi.startGame(state.settings);

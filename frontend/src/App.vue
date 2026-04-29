@@ -3,6 +3,7 @@ import AppLayout from "./components/AppLayout.vue";
 import Board from "./components/Board.vue";
 import ControlPanel from "./components/ControlPanel.vue";
 import DifficultySelect from "./components/DifficultySelect.vue";
+import ThinkingIndicator from "./components/ThinkingIndicator.vue";
 import { useGameState } from "./composables/useGameState";
 
 const props = defineProps({
@@ -115,6 +116,11 @@ function formatPath(path) {
         @start-game="startGame"
         @undo-move="undoMove"
       />
+
+      <div class="panel-section">
+        <p class="section-label">Thinking</p>
+        <ThinkingIndicator :is-thinking="state.isBusy && state.status === 'AI 思考'" :metrics="state.searchMetrics" />
+      </div>
 
       <div class="panel-section stats-grid" aria-label="棋局状态">
         <div>

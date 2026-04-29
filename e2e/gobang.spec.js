@@ -16,6 +16,7 @@ function snapshot(overrides = {}) {
     score: null,
     best_path: [],
     current_depth: overrides.current_depth ?? 1,
+    search_metrics: overrides.search_metrics ?? null,
     ...overrides,
   };
 }
@@ -45,6 +46,10 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#ai-score-value")).toHaveText("-");
   await expect(page.locator("#ai-depth-value")).toHaveText("-");
   await expect(page.locator("#best-path-value")).toHaveText("-");
+  await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
+  await expect(page.locator("#thinking-elapsed-value")).toHaveText("-");
+  await expect(page.locator("#thinking-nodes-value")).toHaveText("-");
+  await expect(page.locator("#thinking-prunes-value")).toHaveText("-");
   await expect(startButton).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -73,6 +78,8 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#ai-score-value")).not.toHaveText("-");
   await expect(page.locator("#ai-depth-value")).toHaveText("2");
   await expect(page.locator("#best-path-value")).toHaveText(/^(?:\([1-9]\d*, [1-9]\d*\))(?: → \([1-9]\d*, [1-9]\d*\))*$/);
+  await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
+  await expect(page.locator("#thinking-nodes-value")).not.toHaveText("-");
   await expect(board.locator(".stone")).toHaveCount(2);
   await expect(board.locator(".stone.black")).toHaveCount(1);
   await expect(board.locator(".stone.white")).toHaveCount(1);
@@ -216,7 +223,8 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   await aiFirstInput.check();
   await startButton.click();
 
-  await expect(page.locator("#status")).toHaveText("连接中");
+  await expect(page.locator("#status")).toHaveText("AI 思考");
+  await expect(page.locator("#thinking-state-value")).toHaveText("AI 思考中");
   await expect(startButton).toBeDisabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -239,6 +247,72 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   await expect(endButton).toBeEnabled();
   await expect(restartButton).toBeEnabled();
   expect(requestBody).toEqual({ size: 7, ai_first: true, depth: 6 });
+});
+
+test("shows thinking state while AI move is pending and then renders search metrics", async ({ page }) => {
+  let releaseMove;
+  const moveCanFinish = new Promise((resolve) => {
+    releaseMove = resolve;
+  });
+
+  await page.route("**/api/games/start", async (route) => {
+    const requestBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ size: requestBody.size, current_depth: requestBody.depth })),
+    });
+  });
+
+  await page.route("**/api/games/e2e-session/move", async (route) => {
+    await moveCanFinish;
+    const movedBoard = board(6);
+    movedBoard[2][2] = 1;
+    movedBoard[2][3] = -1;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({
+        board: movedBoard,
+        history: [
+          { i: 2, j: 2, role: 1 },
+          { i: 2, j: 3, role: -1 },
+        ],
+        score: 16,
+        best_path: [[2, 3]],
+        current_depth: 2,
+        search_metrics: {
+          nodes: 42,
+          prunes: 5,
+          cache_hits: 3,
+          cache_stores: 7,
+          candidate_moves: 12,
+          leaf_nodes: 18,
+          max_depth: 2,
+          elapsed_ms: 12.34,
+        },
+      })),
+    });
+  });
+
+  await page.goto("/");
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#difficulty-easy").click();
+  await page.locator("#start-button").click();
+  await page.locator('#board .cell[data-row="2"][data-col="2"]').click();
+
+  await expect(page.locator("#status")).toHaveText("AI 思考");
+  await expect(page.locator("#thinking-state-value")).toHaveText("AI 思考中");
+  await expect(page.locator("#thinking-indicator")).toHaveClass(/is-thinking/);
+
+  releaseMove();
+
+  await expect(page.locator("#status")).toHaveText("进行中");
+  await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
+  await expect(page.locator("#thinking-elapsed-value")).toHaveText(/\d+\.\d ms/);
+  await expect(page.locator("#thinking-elapsed-value")).not.toHaveText("-");
+  await expect(page.locator("#thinking-nodes-value")).toHaveText("42");
+  await expect(page.locator("#thinking-prunes-value")).toHaveText("5");
 });
 
 test("maps difficulty presets and custom depth to existing depth setting", async ({ page }) => {
