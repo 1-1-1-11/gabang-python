@@ -21,7 +21,23 @@ function snapshot(overrides = {}) {
   };
 }
 
+function apiCallSummary(request) {
+  const url = new URL(request.url());
+  if (!url.pathname.startsWith("/api/games") || request.method() === "OPTIONS") {
+    return null;
+  }
+  return `${request.method()} ${url.pathname}`;
+}
+
 test("plays the main game path", async ({ page }) => {
+  const apiCalls = [];
+  page.on("request", (request) => {
+    const summary = apiCallSummary(request);
+    if (summary) {
+      apiCalls.push(summary);
+    }
+  });
+
   await page.goto("/");
 
   const board = page.locator("#board");
@@ -131,6 +147,11 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#game-result-value")).toHaveText("本局已结束");
   await expect(page.locator("#game-result-restart-button")).toBeEnabled();
   await expect(board.locator(".cell").first()).toBeDisabled();
+  expect(apiCalls).toHaveLength(4);
+  expect(apiCalls[0]).toBe("POST /api/games/start");
+  expect(apiCalls[1]).toMatch(/^POST \/api\/games\/[^/]+\/move$/);
+  expect(apiCalls[2]).toMatch(/^POST \/api\/games\/[^/]+\/undo$/);
+  expect(apiCalls[3]).toMatch(/^POST \/api\/games\/[^/]+\/end$/);
 });
 
 test("restarts the active game from the control panel", async ({ page }) => {

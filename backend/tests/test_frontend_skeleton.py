@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 FRONTEND = ROOT / "frontend"
 FRONTEND_SRC = FRONTEND / "src"
+E2E_SPEC = ROOT / "e2e" / "gobang.spec.js"
 API_CLIENT = FRONTEND_SRC / "api" / "client.js"
 GAME_STATE = FRONTEND_SRC / "composables" / "useGameState.js"
 APP_LAYOUT = FRONTEND_SRC / "components" / "AppLayout.vue"
@@ -380,3 +381,17 @@ def test_frontend_tracks_status_in_state():
     assert 'setStatus("已结束")' in game_state
     assert "state.isGameOver = Boolean(state.winner)" in game_state
     assert "state.isGameOver = true" in game_state
+
+
+def test_playwright_main_path_records_core_api_flow():
+    spec = E2E_SPEC.read_text(encoding="utf-8")
+
+    assert 'test("plays the main game path"' in spec
+    assert "function apiCallSummary(request)" in spec
+    assert 'request.method() === "OPTIONS"' in spec
+    assert "const apiCalls = []" in spec
+    assert 'expect(apiCalls[0]).toBe("POST /api/games/start")' in spec
+    assert "/move" in spec
+    assert "/undo" in spec
+    assert "/end" in spec
+    assert "expect(apiCalls).toHaveLength(4)" in spec
