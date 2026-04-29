@@ -48,7 +48,7 @@ function roleName(role) {
     </template>
 
     <template #status>
-      <div id="status" class="status-pill" role="status">{{ state.status }}</div>
+      <div id="status" class="status-pill" role="status" aria-live="polite">{{ state.status }}</div>
     </template>
 
     <template #board>

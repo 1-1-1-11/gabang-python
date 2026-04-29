@@ -28,6 +28,7 @@ const emit = defineEmits(["start-game", "undo-move", "end-game", "restart-game"]
       <button
         id="start-button"
         type="button"
+        aria-label="开始新棋局"
         :class="{ 'is-busy': isBusy }"
         :disabled="isBusy || hasSession"
         @click="emit('start-game')"
@@ -37,6 +38,7 @@ const emit = defineEmits(["start-game", "undo-move", "end-game", "restart-game"]
       <button
         id="undo-button"
         type="button"
+        aria-label="悔棋一步"
         :class="{ 'is-busy': isBusy }"
         :disabled="isBusy || !hasSession || !canUndo"
         @click="emit('undo-move')"
@@ -46,6 +48,7 @@ const emit = defineEmits(["start-game", "undo-move", "end-game", "restart-game"]
       <button
         id="end-button"
         type="button"
+        aria-label="结束本局"
         :class="{ 'is-busy': isBusy }"
         :disabled="isBusy || !hasSession"
         @click="emit('end-game')"

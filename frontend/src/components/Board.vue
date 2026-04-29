@@ -29,6 +29,21 @@ defineProps({
 });
 
 const emit = defineEmits(["play-move"]);
+
+function roleName(role) {
+  if (role === 1) {
+    return "黑方";
+  }
+  if (role === -1) {
+    return "白方";
+  }
+  return "空位";
+}
+
+function cellLabel(row, col, role, isLatestMove) {
+  const label = `第 ${row + 1} 行，第 ${col + 1} 列，${roleName(role)}`;
+  return isLatestMove ? `${label}，最后一步` : label;
+}
 </script>
 
 <template>
@@ -38,6 +53,7 @@ const emit = defineEmits(["play-move"]);
     :class="{ 'is-busy': isBusy }"
     role="grid"
     :aria-label="`${size} x ${size} 五子棋棋盘`"
+    :aria-busy="isBusy"
     :style="boardStyle"
   >
     <template v-for="(rowCells, row) in board" :key="row">
@@ -48,7 +64,8 @@ const emit = defineEmits(["play-move"]);
         :class="{ 'is-latest': isLatest(row, col) }"
         type="button"
         role="gridcell"
-        :aria-label="`row ${row + 1}, column ${col + 1}`"
+        :aria-disabled="cellDisabled(row, col)"
+        :aria-label="cellLabel(row, col, role, isLatest(row, col))"
         :data-row="row"
         :data-col="col"
         :disabled="cellDisabled(row, col)"

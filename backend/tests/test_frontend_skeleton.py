@@ -158,6 +158,11 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'class="side-panel"' in layout
     assert 'id="board"' in board_component
     assert 'class="cell"' in board_component
+    assert "function cellLabel(row, col, role, isLatestMove)" in board_component
+    assert "roleName(role)" in board_component
+    assert ":aria-busy=\"isBusy\"" in board_component
+    assert ':aria-disabled="cellDisabled(row, col)"' in board_component
+    assert ':aria-label="cellLabel(row, col, role, isLatest(row, col))"' in board_component
     assert 'from "./Stone.vue"' in board_component
     assert '<Stone v-if="role !== 0"' in board_component
     assert ':is-latest="isLatest(row, col)"' in board_component
@@ -167,8 +172,11 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "'is-latest': isLatest" in stone_component
     assert "<ControlPanel" in app
     assert 'id="start-button"' in control_panel
+    assert 'aria-label="开始新棋局"' in control_panel
     assert 'id="undo-button"' in control_panel
+    assert 'aria-label="悔棋一步"' in control_panel
     assert 'id="end-button"' in control_panel
+    assert 'aria-label="结束本局"' in control_panel
     assert 'id="restart-button"' in control_panel
     assert "emit('start-game')" in control_panel
     assert "emit('undo-move')" in control_panel
@@ -225,6 +233,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'id="error-message"' in error_banner
     assert 'id="error-dismiss-button"' in error_banner
     assert 'role="alert"' in error_banner
+    assert 'aria-live="polite"' in app
     assert "<GameResult" in app
     assert ':winner="state.winner"' in app
     assert ':is-game-over="state.isGameOver"' in app
@@ -408,3 +417,15 @@ def test_playwright_responsive_path_covers_active_game():
     assert "#game-result" in spec
     assert "@media (max-width: 520px)" in css
     assert "grid-template-columns: repeat(2, minmax(0, 1fr))" in css
+
+
+def test_playwright_accessibility_basics_cover_keyboard_and_names():
+    spec = E2E_SPEC.read_text(encoding="utf-8")
+
+    assert 'test("exposes accessible names and keyboard focus states"' in spec
+    assert "page.keyboard.press(\"Tab\")" in spec
+    assert "toBeFocused()" in spec
+    assert "getComputedStyle(element).boxShadow" in spec
+    assert 'getByRole("grid", { name: "15 x 15 五子棋棋盘" })' in spec
+    assert 'getByRole("button", { name: "开始新棋局" })' in spec
+    assert "第 1 行，第 1 列，空位" in spec

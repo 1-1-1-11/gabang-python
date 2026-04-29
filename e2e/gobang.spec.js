@@ -275,6 +275,35 @@ test("keeps active game usable without horizontal overflow on narrow screens", a
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
 });
 
+test("exposes accessible names and keyboard focus states", async ({ page }) => {
+  await page.goto("/");
+
+  const firstCell = page.locator('.cell[data-row="0"][data-col="0"]');
+  const boardSizeInput = page.locator("#board-size-input");
+
+  await expect(page.getByRole("status")).toHaveText("待开始");
+  await expect(page.getByRole("grid", { name: "15 x 15 五子棋棋盘" })).toBeVisible();
+  await expect(firstCell).toHaveAttribute("aria-label", "第 1 行，第 1 列，空位");
+  await expect(firstCell).toHaveAttribute("aria-disabled", "true");
+  await expect(page.getByRole("button", { name: "开始新棋局" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "悔棋一步" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "结束本局" })).toBeDisabled();
+
+  await page.keyboard.press("Tab");
+  await expect(boardSizeInput).toBeFocused();
+  const focusShadow = await boardSizeInput.evaluate((element) => getComputedStyle(element).boxShadow);
+  expect(focusShadow).not.toBe("none");
+
+  await boardSizeInput.fill("6");
+  await page.locator("#difficulty-easy").click();
+  await page.getByRole("button", { name: "开始新棋局" }).click();
+
+  await expect(page.getByRole("grid", { name: "6 x 6 五子棋棋盘" })).toBeVisible();
+  await expect(firstCell).toHaveAttribute("aria-disabled", "false");
+  await firstCell.click();
+  await expect(firstCell).toHaveAttribute("aria-label", /第 1 行，第 1 列，黑方/);
+});
+
 test("sends settings and disables controls while starting", async ({ page }) => {
   let requestCount = 0;
   let requestBody;
