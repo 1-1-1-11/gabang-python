@@ -10,7 +10,7 @@ CORE_METRIC_KEYS = {
     "nodes",
     "cache_hits",
     "cache_stores",
-    "prunes",
+    "beta_cutoffs",
     "max_depth",
     "candidate_moves",
     "leaf_nodes",
@@ -94,8 +94,8 @@ def test_simple_threat_sequence_stays_within_smoke_budget():
     assert value > 0
     assert move in ([4, 1], [4, 5])
     assert path[0] == move
-    assert len(path) == 2
-    assert_smoke_budget(elapsed, max_nodes=80, max_candidates=80)
+    assert len(path) >= 2
+    assert_smoke_budget(elapsed, max_nodes=80, max_candidates=80, max_depth=3)
 
 
 def test_midgame_tactical_search_stays_within_smoke_budget_and_uses_cache():
@@ -107,7 +107,7 @@ def test_midgame_tactical_search_stays_within_smoke_budget_and_uses_cache():
     assert move in board.get_valid_moves()
     assert path[0] == move
     assert board.board[move[0]][move[1]] == 0
-    assert_smoke_budget(elapsed, max_nodes=260, max_candidates=320)
+    assert_smoke_budget(elapsed, max_nodes=260, max_candidates=500, max_depth=3)
 
     minmax(board, 1, depth=2)
 

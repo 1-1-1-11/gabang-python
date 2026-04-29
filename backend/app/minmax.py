@@ -5,6 +5,7 @@ from backend.app.cache import Cache
 from backend.app.evaluation import FIVE
 
 MAX = 1_000_000_000
+QUIESCENCE_LIMIT = 1
 CacheBound = Literal["exact", "lower", "upper"]
 
 
@@ -21,7 +22,7 @@ search_metrics = {
     "nodes": 0,
     "cache_hits": 0,
     "cache_stores": 0,
-    "prunes": 0,
+    "beta_cutoffs": 0,
     "max_depth": 0,
     "candidate_moves": 0,
     "leaf_nodes": 0,
@@ -30,26 +31,47 @@ _cache = Cache()
 
 
 def minmax(board, role: int, depth: int = 4):
-    return _search(board, role, depth, 0, [], -MAX, MAX)
+    result = None
+    for d in range(1, depth + 1):
+        result = _search(board, role, d, 0, [], -MAX, MAX, q_enabled=True)
+        if result[0] >= FIVE or result[0] <= -FIVE:
+            break
+    return result if result is not None else [board.evaluate(role), None, []]
 
 
 def vct(board, role: int, depth: int = 8):
-    return _search(board, role, depth, 0, [], -MAX, MAX, only_three=True)
+    result = None
+    for d in range(1, depth + 1):
+        result = _search(board, role, d, 0, [], -MAX, MAX, only_three=True, q_enabled=False)
+        if result[0] >= FIVE or result[0] <= -FIVE:
+            break
+    return result if result is not None else [board.evaluate(role), None, []]
 
 
 def vcf(board, role: int, depth: int = 8):
-    return _search(board, role, depth, 0, [], -MAX, MAX, only_four=True)
+    result = None
+    for d in range(1, depth + 1):
+        result = _search(board, role, d, 0, [], -MAX, MAX, only_four=True, q_enabled=False)
+        if result[0] >= FIVE or result[0] <= -FIVE:
+            break
+    return result if result is not None else [board.evaluate(role), None, []]
 
 
-def _search(board, role: int, depth: int, current_depth: int, path: list[list[int]], alpha: int, beta: int, only_three: bool = False, only_four: bool = False):
+def _search(board, role: int, depth: int, current_depth: int, path: list[list[int]], alpha: int, beta: int, only_three: bool = False, only_four: bool = False, q_enabled: bool = False):
     cache_hits["search"] += 1
     search_metrics["nodes"] += 1
     search_metrics["max_depth"] = max(search_metrics["max_depth"], current_depth)
-    if current_depth >= depth or board.is_game_over():
+
+    actual_limit = depth + (QUIESCENCE_LIMIT if q_enabled else 0)
+    if current_depth >= actual_limit or board.is_game_over():
         search_metrics["leaf_nodes"] += 1
         return [board.evaluate(role), None, path.copy()]
 
-    cache_key = _build_cache_key(board, role, depth - current_depth, only_three, only_four)
+    # At the search horizon, enter quiescence mode: only search threat moves
+    if q_enabled and current_depth >= depth and not only_three and not only_four:
+        only_four = True
+
+    cache_key = _build_cache_key(board, role, actual_limit - current_depth, only_three, only_four)
     cached = _cache.get(cache_key)
     if cached is not None:
         cached_result = _cached_result(cached, alpha, beta, path)
@@ -71,7 +93,7 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
 
     for move in moves:
         board.put(move[0], move[1], role)
-        current_value, _, current_path = _search(board, -role, depth, current_depth + 1, path + [move], -beta, -alpha, only_three, only_four)
+        current_value, _, current_path = _search(board, -role, depth, current_depth + 1, path + [move], -beta, -alpha, only_three, only_four, q_enabled)
         current_value = -current_value
         board.undo()
 
@@ -81,11 +103,10 @@ def _search(board, role: int, depth: int, current_depth: int, path: list[list[in
             best_path = current_path
         alpha = max(alpha, value)
         if alpha >= beta or alpha >= FIVE:
-            search_metrics["prunes"] += 1
+            search_metrics["beta_cutoffs"] += 1
             break
 
     remaining_path = best_path[current_depth:]
-    # FIVE is the terminal win ceiling, so a FIVE early stop is exact unless the beta window says otherwise.
     bound = _cache_bound(value, alpha_start, beta)
     _cache.put(cache_key, CacheEntry(value=value, move=best_move, path=remaining_path, bound=bound))
     cache_hits["total"] += 1
@@ -105,7 +126,7 @@ def reset_search_metrics() -> None:
             "nodes": 0,
             "cache_hits": 0,
             "cache_stores": 0,
-            "prunes": 0,
+            "beta_cutoffs": 0,
             "max_depth": 0,
             "candidate_moves": 0,
             "leaf_nodes": 0,

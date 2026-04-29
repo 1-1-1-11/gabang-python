@@ -47,8 +47,8 @@ function formatPath(path) {
         <strong id="search-nodes-value">{{ metricValue(metrics, "nodes") }}</strong>
       </div>
       <div>
-        <span>剪枝</span>
-        <strong id="search-prunes-value">{{ metricValue(metrics, "prunes") }}</strong>
+        <span>截断</span>
+        <strong id="search-beta-cutoffs-value">{{ metricValue(metrics, "beta_cutoffs") }}</strong>
       </div>
       <div>
         <span>缓存命中</span>

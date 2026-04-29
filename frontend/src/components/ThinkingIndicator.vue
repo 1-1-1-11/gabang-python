@@ -39,8 +39,8 @@ function elapsedValue(metrics) {
         <dd id="thinking-nodes-value">{{ metricValue(metrics, "nodes") }}</dd>
       </div>
       <div>
-        <dt>剪枝</dt>
-        <dd id="thinking-prunes-value">{{ metricValue(metrics, "prunes") }}</dd>
+        <dt>截断</dt>
+        <dd id="thinking-beta-cutoffs-value">{{ metricValue(metrics, "beta_cutoffs") }}</dd>
       </div>
     </dl>
   </div>

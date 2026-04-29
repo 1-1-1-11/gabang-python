@@ -17,7 +17,7 @@ def test_openapi_documents_game_snapshot_and_best_path():
     assert schemas["GameSnapshot"]["properties"]["search_metrics"]["description"]
     assert schemas["GameSnapshot"]["properties"]["search_metrics"]["$ref"].endswith("/SearchMetricsSnapshot")
     metric_properties = schemas["SearchMetricsSnapshot"]["properties"]
-    for metric in ("nodes", "prunes", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth", "elapsed_ms"):
+    for metric in ("nodes", "beta_cutoffs", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth", "elapsed_ms"):
         assert metric in metric_properties
 
 

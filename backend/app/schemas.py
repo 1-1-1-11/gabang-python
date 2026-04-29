@@ -31,7 +31,7 @@ class MoveRecord(BaseModel):
 
 class SearchMetricsSnapshot(BaseModel):
     nodes: int = Field(description="Search nodes visited by the latest AI search.")
-    prunes: int = Field(description="Alpha-beta prune count from the latest AI search.")
+    beta_cutoffs: int = Field(description="Alpha-beta beta-cutoff events from the latest AI search.")
     cache_hits: int = Field(description="Transposition cache hits from the latest AI search.")
     cache_stores: int = Field(description="Transposition cache stores from the latest AI search.")
     candidate_moves: int = Field(description="Candidate moves considered by the latest AI search.")

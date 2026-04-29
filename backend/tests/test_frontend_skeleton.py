@@ -201,10 +201,10 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'id="thinking-state-value"' in thinking_indicator
     assert 'id="thinking-elapsed-value"' in thinking_indicator
     assert 'id="thinking-nodes-value"' in thinking_indicator
-    assert 'id="thinking-prunes-value"' in thinking_indicator
+    assert 'id="thinking-beta-cutoffs-value"' in thinking_indicator
     assert "elapsed_ms" in thinking_indicator
     assert '"nodes"' in thinking_indicator
-    assert '"prunes"' in thinking_indicator
+    assert '"beta_cutoffs"' in thinking_indicator
     assert "<MoveHistory" in app
     assert ':moves="state.history"' in app
     assert 'id="move-list"' in move_history
@@ -222,7 +222,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'id="ai-depth-value"' in search_info
     assert 'id="best-path-value"' in search_info
     assert 'id="search-nodes-value"' in search_info
-    assert 'id="search-prunes-value"' in search_info
+    assert 'id="search-beta-cutoffs-value"' in search_info
     assert 'id="search-cache-hits-value"' in search_info
     assert '"cache_hits"' in search_info
     assert "function formatPath(path)" in search_info

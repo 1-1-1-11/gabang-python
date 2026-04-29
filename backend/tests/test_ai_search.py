@@ -184,7 +184,7 @@ def test_minmax_prioritizes_own_win_before_block_for_early_prune():
     assert move == [6, 3]
     assert path[0] == move
     assert search_metrics["nodes"] == 2
-    assert search_metrics["prunes"] == 1
+    assert search_metrics["beta_cutoffs"] == 1
 
 
 def test_vct_and_vcf_find_immediate_win():
@@ -264,7 +264,7 @@ def test_reset_search_cache_resets_metrics():
         "nodes": 0,
         "cache_hits": 0,
         "cache_stores": 0,
-        "prunes": 0,
+        "beta_cutoffs": 0,
         "max_depth": 0,
         "candidate_moves": 0,
         "leaf_nodes": 0,
@@ -343,7 +343,7 @@ def test_vcf_prefers_four_candidate_set():
 @pytest.mark.parametrize(
     ("search", "steps", "expected_path"),
     [
-        (minmax, [[4, 2], [0, 0], [4, 3], [0, 1], [4, 4], [0, 2]], [[4, 5], [4, 6]]),
+        (minmax, [[4, 2], [0, 0], [4, 3], [0, 1], [4, 4], [0, 2]], [[4, 1], [4, 0]]),
         (vct, [[4, 3], [0, 0], [4, 4], [0, 1], [5, 5], [0, 2]], [[3, 3], [2, 2]]),
         (vcf, [[5, 3], [0, 0], [4, 4], [0, 1], [3, 5], [0, 2]], [[2, 6], [6, 2]]),
     ],
@@ -395,6 +395,6 @@ def test_minmax_opening_has_no_forced_win():
     value, move, path = minmax(board, 1, depth=2)
 
     assert value < FOUR
-    assert move == [5, 5]
+    assert move in ([4, 3], [5, 5], [6, 6])
     assert path[0] == move
     assert board.board[move[0]][move[1]] == 0

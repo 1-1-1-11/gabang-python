@@ -5,7 +5,7 @@ from backend.app.game import MAX_SESSIONS, get_session, sessions
 from backend.app.main import app
 
 
-SEARCH_METRIC_KEYS = {"nodes", "prunes", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth", "elapsed_ms"}
+SEARCH_METRIC_KEYS = {"nodes", "beta_cutoffs", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth", "elapsed_ms"}
 
 
 @pytest.fixture(autouse=True)
@@ -69,7 +69,7 @@ def test_move_places_player_move_and_ai_reply():
     assert payload["search_metrics"]["nodes"] > 0
     assert payload["search_metrics"]["candidate_moves"] > 0
     assert payload["search_metrics"]["leaf_nodes"] > 0
-    assert payload["search_metrics"]["max_depth"] <= 1
+    assert payload["search_metrics"]["max_depth"] <= 2
     assert payload["search_metrics"]["elapsed_ms"] >= 0
 
 

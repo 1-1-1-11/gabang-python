@@ -36,7 +36,7 @@ def make_session() -> GameSession:
         last_score=12,
         last_best_path=[[2, 2], [4, 4]],
         last_current_depth=1,
-        last_search_metrics={"nodes": 3, "prunes": 1, "cache_hits": 0, "cache_stores": 1, "candidate_moves": 4, "leaf_nodes": 2, "max_depth": 1, "elapsed_ms": 1.5},
+        last_search_metrics={"nodes": 3, "beta_cutoffs": 1, "cache_hits": 0, "cache_stores": 1, "candidate_moves": 4, "leaf_nodes": 2, "max_depth": 1, "elapsed_ms": 1.5},
     )
 
 

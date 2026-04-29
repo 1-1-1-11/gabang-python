@@ -115,7 +115,7 @@ def create_session_store() -> SessionStore:
 sessions = create_session_store()
 
 
-SEARCH_METRIC_KEYS = ("nodes", "prunes", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth")
+SEARCH_METRIC_KEYS = ("nodes", "beta_cutoffs", "cache_hits", "cache_stores", "candidate_moves", "leaf_nodes", "max_depth")
 
 
 def empty_search_metrics() -> dict[str, int | float]:

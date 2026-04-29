@@ -82,7 +82,9 @@ class Board:
             center = self.size // 2
             if self.board[center][center] == 0 and [center, center] not in moves:
                 moves.append([center, center])
-        return moves[:20] or self._nearby_valid_moves()
+        if not moves:
+            return self._nearby_valid_moves() if not only_three and not only_four else []
+        return moves[:20]
 
     def evaluate(self, role: int) -> int:
         winner = self.get_winner()
