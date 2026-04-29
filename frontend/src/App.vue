@@ -3,6 +3,7 @@ import AppLayout from "./components/AppLayout.vue";
 import Board from "./components/Board.vue";
 import ControlPanel from "./components/ControlPanel.vue";
 import DifficultySelect from "./components/DifficultySelect.vue";
+import MoveHistory from "./components/MoveHistory.vue";
 import ThinkingIndicator from "./components/ThinkingIndicator.vue";
 import { useGameState } from "./composables/useGameState";
 
@@ -156,18 +157,7 @@ function formatPath(path) {
         </div>
       </div>
 
-      <div class="panel-section">
-        <p class="section-label">Moves</p>
-        <ol id="move-list" class="move-list" aria-label="落子记录">
-          <li
-            v-for="(move, index) in state.history"
-            :key="`${index}-${move.i}-${move.j}`"
-            :class="{ 'is-latest': index === state.history.length - 1 }"
-          >
-            {{ index + 1 }}. {{ roleName(move.role) }} ({{ move.i + 1 }}, {{ move.j + 1 }})
-          </li>
-        </ol>
-      </div>
+      <MoveHistory :moves="state.history" />
     </template>
   </AppLayout>
 </template>

@@ -14,6 +14,7 @@ STONE_COMPONENT = FRONTEND_SRC / "components" / "Stone.vue"
 CONTROL_PANEL_COMPONENT = FRONTEND_SRC / "components" / "ControlPanel.vue"
 DIFFICULTY_SELECT_COMPONENT = FRONTEND_SRC / "components" / "DifficultySelect.vue"
 THINKING_INDICATOR_COMPONENT = FRONTEND_SRC / "components" / "ThinkingIndicator.vue"
+MOVE_HISTORY_COMPONENT = FRONTEND_SRC / "components" / "MoveHistory.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -106,6 +107,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert CONTROL_PANEL_COMPONENT.is_file()
     assert DIFFICULTY_SELECT_COMPONENT.is_file()
     assert THINKING_INDICATOR_COMPONENT.is_file()
+    assert MOVE_HISTORY_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -118,6 +120,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     control_panel = CONTROL_PANEL_COMPONENT.read_text(encoding="utf-8")
     difficulty_select = DIFFICULTY_SELECT_COMPONENT.read_text(encoding="utf-8")
     thinking_indicator = THINKING_INDICATOR_COMPONENT.read_text(encoding="utf-8")
+    move_history = MOVE_HISTORY_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -127,6 +130,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'from "./components/Board.vue"' in app
     assert 'from "./components/ControlPanel.vue"' in app
     assert 'from "./components/DifficultySelect.vue"' in app
+    assert 'from "./components/MoveHistory.vue"' in app
     assert 'from "./components/ThinkingIndicator.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
@@ -176,6 +180,14 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "elapsed_ms" in thinking_indicator
     assert '"nodes"' in thinking_indicator
     assert '"prunes"' in thinking_indicator
+    assert "<MoveHistory" in app
+    assert ':moves="state.history"' in app
+    assert 'id="move-list"' in move_history
+    assert 'id="move-empty"' in move_history
+    assert "moves.length === 0" in move_history
+    assert "roleName(move.role)" in move_history
+    assert "move.i + 1" in move_history
+    assert "move.j + 1" in move_history
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -221,6 +233,7 @@ def test_frontend_renders_api_snapshots():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
     board_component = BOARD_COMPONENT.read_text(encoding="utf-8")
     stone_component = STONE_COMPONENT.read_text(encoding="utf-8")
+    move_history = MOVE_HISTORY_COMPONENT.read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert "function applySnapshot(snapshot)" in game_state
@@ -235,8 +248,8 @@ def test_frontend_renders_api_snapshots():
     assert "latestMove" in game_state
     assert "'is-latest'" in board_component
     assert "stone-latest-dot" in stone_component
-    assert "move.i + 1" in app
-    assert "move.j + 1" in app
+    assert "move.i + 1" in move_history
+    assert "move.j + 1" in move_history
     assert "function formatPath(path)" in app
     assert "formatPath(state.bestPath)" in app
 

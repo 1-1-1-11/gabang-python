@@ -50,6 +50,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#thinking-elapsed-value")).toHaveText("-");
   await expect(page.locator("#thinking-nodes-value")).toHaveText("-");
   await expect(page.locator("#thinking-prunes-value")).toHaveText("-");
+  await expect(page.locator("#move-empty")).toHaveText("暂无落子");
   await expect(startButton).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -86,6 +87,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(board.locator(".stone.is-latest")).toHaveCount(1);
   await expect(board.locator(".cell.is-latest .stone-latest-dot")).toHaveCount(1);
   await expect(page.locator("#move-list li")).toHaveCount(2);
+  await expect(page.locator("#move-empty")).toHaveCount(0);
   await expect(page.locator("#move-list li").first()).toContainText("黑方 (3, 3)");
   await expect(page.locator("#move-list li").nth(1)).toContainText("白方");
   await expect(board.locator(".cell.is-latest")).toHaveCount(1);
@@ -103,6 +105,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(board.locator(".stone")).toHaveCount(0);
   await expect(board.locator(".cell.is-latest")).toHaveCount(0);
   await expect(page.locator("#move-list li")).toHaveCount(0);
+  await expect(page.locator("#move-empty")).toHaveText("暂无落子");
   await expect(undoButton).toBeDisabled();
   await expect(restartButton).toBeEnabled();
 
