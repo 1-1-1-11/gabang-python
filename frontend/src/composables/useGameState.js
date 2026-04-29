@@ -4,6 +4,7 @@ import { createGameApi, DEFAULT_API_BASE, normalizeApiBase } from "../api/client
 
 export const BOARD_SIZE = 15;
 export const SEARCH_DEPTH = 4;
+export const DEFAULT_DIFFICULTY = "normal";
 
 export function emptyBoard(size) {
   return Array.from({ length: size }, () => Array(size).fill(0));
@@ -35,6 +36,7 @@ export function useGameState(options = {}) {
     settings: {
       size: BOARD_SIZE,
       depth: SEARCH_DEPTH,
+      difficulty: DEFAULT_DIFFICULTY,
       apiBase: gameApi.apiBase,
       aiFirst: false,
     },

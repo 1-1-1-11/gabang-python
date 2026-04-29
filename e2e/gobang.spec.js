@@ -34,9 +34,11 @@ test("plays the main game path", async ({ page }) => {
   const apiBaseInput = page.locator("#api-base-input");
 
   await expect(page.locator("#board-size-hint")).toContainText("范围 5-25");
-  await expect(page.locator("#search-depth-hint")).toContainText("深度越高 AI 思考越慢");
+  await expect(page.locator("#search-depth-hint")).toContainText("现有 depth 2/4/6");
   await expect(page.locator("#api-base-hint")).toContainText("?apiBase=");
   await expect(apiBaseInput).toHaveValue("http://127.0.0.1:8000");
+  await expect(page.locator("#difficulty-normal")).toHaveAttribute("aria-pressed", "true");
+  await expect(searchDepthInput).toHaveCount(0);
 
   await expect(status).toHaveText("待开始");
   await expect(board.locator(".cell")).toHaveCount(225);
@@ -49,26 +51,27 @@ test("plays the main game path", async ({ page }) => {
   await expect(restartButton).toBeDisabled();
 
   await boardSizeInput.fill("6");
-  await searchDepthInput.fill("1");
+  await page.locator("#difficulty-easy").click();
+  await expect(page.locator("#difficulty-easy")).toHaveAttribute("aria-pressed", "true");
   await startButton.click();
 
   await expect(status).toHaveText("进行中");
   await expect(page.locator("#size-value")).toHaveText("6 x 6");
-  await expect(page.locator("#depth-value")).toHaveText("1");
+  await expect(page.locator("#depth-value")).toHaveText("2");
   await expect(board.locator(".cell")).toHaveCount(36);
   await expect(startButton).toBeDisabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeEnabled();
   await expect(restartButton).toBeEnabled();
   await expect(boardSizeInput).toBeDisabled();
-  await expect(searchDepthInput).toBeDisabled();
+  await expect(page.locator("#difficulty-easy")).toBeDisabled();
   await expect(apiBaseInput).toBeDisabled();
 
   await board.locator('.cell[data-row="2"][data-col="2"]').click();
 
   await expect(status).toHaveText("进行中");
   await expect(page.locator("#ai-score-value")).not.toHaveText("-");
-  await expect(page.locator("#ai-depth-value")).toHaveText("1");
+  await expect(page.locator("#ai-depth-value")).toHaveText("2");
   await expect(page.locator("#best-path-value")).toHaveText(/^(?:\([1-9]\d*, [1-9]\d*\))(?: → \([1-9]\d*, [1-9]\d*\))*$/);
   await expect(board.locator(".stone")).toHaveCount(2);
   await expect(board.locator(".stone.black")).toHaveCount(1);
@@ -101,7 +104,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(status).toHaveText("已结束");
   await expect(startButton).toBeEnabled();
   await expect(boardSizeInput).toBeEnabled();
-  await expect(searchDepthInput).toBeEnabled();
+  await expect(page.locator("#difficulty-easy")).toBeEnabled();
   await expect(apiBaseInput).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -137,7 +140,7 @@ test("restarts the active game from the control panel", async ({ page }) => {
 
   await page.goto("/");
   await page.locator("#board-size-input").fill("6");
-  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#difficulty-easy").click();
   await page.locator("#start-button").click();
 
   await expect(page.locator("#status")).toHaveText("进行中");
@@ -205,12 +208,11 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   const endButton = page.locator("#end-button");
   const restartButton = page.locator("#restart-button");
   const boardSizeInput = page.locator("#board-size-input");
-  const searchDepthInput = page.locator("#search-depth-input");
   const apiBaseInput = page.locator("#api-base-input");
   const aiFirstInput = page.locator("#ai-first-input");
 
   await boardSizeInput.fill("7");
-  await searchDepthInput.fill("2");
+  await page.locator("#difficulty-hard").click();
   await aiFirstInput.check();
   await startButton.click();
 
@@ -220,7 +222,7 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   await expect(endButton).toBeDisabled();
   await expect(restartButton).toBeDisabled();
   await expect(boardSizeInput).toBeDisabled();
-  await expect(searchDepthInput).toBeDisabled();
+  await expect(page.locator("#difficulty-hard")).toBeDisabled();
   await expect(apiBaseInput).toBeDisabled();
   await expect(aiFirstInput).toBeDisabled();
   await expect(boardElement.locator(".cell").first()).toBeDisabled();
@@ -232,11 +234,41 @@ test("sends settings and disables controls while starting", async ({ page }) => 
 
   await expect(page.locator("#status")).toHaveText("进行中");
   await expect(page.locator("#size-value")).toHaveText("7 x 7");
-  await expect(page.locator("#depth-value")).toHaveText("2");
+  await expect(page.locator("#depth-value")).toHaveText("6");
   await expect(boardElement.locator(".cell")).toHaveCount(49);
   await expect(endButton).toBeEnabled();
   await expect(restartButton).toBeEnabled();
-  expect(requestBody).toEqual({ size: 7, ai_first: true, depth: 2 });
+  expect(requestBody).toEqual({ size: 7, ai_first: true, depth: 6 });
+});
+
+test("maps difficulty presets and custom depth to existing depth setting", async ({ page }) => {
+  let requestBody;
+
+  await page.route("**/api/games/start", async (route) => {
+    requestBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ size: requestBody.size, current_depth: requestBody.depth })),
+    });
+  });
+
+  await page.goto("/");
+
+  await expect(page.locator("#search-depth-input")).toHaveCount(0);
+  await page.locator("#difficulty-easy").click();
+  await expect(page.locator("#difficulty-easy")).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#difficulty-hard").click();
+  await expect(page.locator("#difficulty-hard")).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#difficulty-custom").click();
+  await expect(page.locator("#search-depth-input")).toBeVisible();
+  await page.locator("#search-depth-input").fill("3");
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#start-button").click();
+
+  await expect(page.locator("#status")).toHaveText("进行中");
+  await expect(page.locator("#depth-value")).toHaveText("3");
+  expect(requestBody).toEqual({ size: 6, ai_first: false, depth: 3 });
 });
 
 test("uses api base from query string", async ({ page }) => {
@@ -256,7 +288,7 @@ test("uses api base from query string", async ({ page }) => {
 
   await expect(page.locator("#api-base-input")).toHaveValue("http://127.0.0.1:8000");
   await page.locator("#board-size-input").fill("6");
-  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#difficulty-easy").click();
   await page.locator("#start-button").click();
 
   await expect(page.locator("#status")).toHaveText("进行中");
@@ -273,13 +305,13 @@ test("recovers controls after json error responses", async ({ page }) => {
 
   await page.goto("/");
   await page.locator("#board-size-input").fill("6");
-  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#difficulty-easy").click();
   await page.locator("#start-button").click();
 
   await expect(page.locator("#status")).toHaveText("服务暂不可用");
   await expect(page.locator("#start-button")).toBeEnabled();
   await expect(page.locator("#board-size-input")).toBeEnabled();
-  await expect(page.locator("#search-depth-input")).toBeEnabled();
+  await expect(page.locator("#difficulty-easy")).toBeEnabled();
   await expect(page.locator("#api-base-input")).toBeEnabled();
   await expect(page.locator("#undo-button")).toBeDisabled();
   await expect(page.locator("#end-button")).toBeDisabled();
@@ -296,13 +328,13 @@ test("recovers controls after non-json responses", async ({ page }) => {
 
   await page.goto("/");
   await page.locator("#board-size-input").fill("6");
-  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#difficulty-easy").click();
   await page.locator("#start-button").click();
 
   await expect(page.locator("#status")).toHaveText("响应格式错误");
   await expect(page.locator("#start-button")).toBeEnabled();
   await expect(page.locator("#board-size-input")).toBeEnabled();
-  await expect(page.locator("#search-depth-input")).toBeEnabled();
+  await expect(page.locator("#difficulty-easy")).toBeEnabled();
   await expect(page.locator("#api-base-input")).toBeEnabled();
   await expect(page.locator("#undo-button")).toBeDisabled();
   await expect(page.locator("#end-button")).toBeDisabled();

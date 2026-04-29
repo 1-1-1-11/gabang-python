@@ -2,6 +2,7 @@
 import AppLayout from "./components/AppLayout.vue";
 import Board from "./components/Board.vue";
 import ControlPanel from "./components/ControlPanel.vue";
+import DifficultySelect from "./components/DifficultySelect.vue";
 import { useGameState } from "./composables/useGameState";
 
 const props = defineProps({
@@ -76,19 +77,11 @@ function formatPath(path) {
             >
             <span id="board-size-hint" class="field-hint">范围 5-25，演示推荐 6-15。</span>
           </label>
-          <label for="search-depth-input">
-            深度
-            <input
-              id="search-depth-input"
-              v-model.number="state.settings.depth"
-              type="number"
-              min="1"
-              max="8"
-              aria-describedby="search-depth-hint"
-              :disabled="state.isBusy || Boolean(state.sessionId)"
-            >
-            <span id="search-depth-hint" class="field-hint">范围 1-8，深度越高 AI 思考越慢。</span>
-          </label>
+          <DifficultySelect
+            v-model:depth="state.settings.depth"
+            v-model:difficulty="state.settings.difficulty"
+            :disabled="state.isBusy || Boolean(state.sessionId)"
+          />
           <label for="api-base-input">
             API 地址
             <input

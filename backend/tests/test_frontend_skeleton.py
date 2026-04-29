@@ -12,6 +12,7 @@ APP_LAYOUT = FRONTEND_SRC / "components" / "AppLayout.vue"
 BOARD_COMPONENT = FRONTEND_SRC / "components" / "Board.vue"
 STONE_COMPONENT = FRONTEND_SRC / "components" / "Stone.vue"
 CONTROL_PANEL_COMPONENT = FRONTEND_SRC / "components" / "ControlPanel.vue"
+DIFFICULTY_SELECT_COMPONENT = FRONTEND_SRC / "components" / "DifficultySelect.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -102,6 +103,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert BOARD_COMPONENT.is_file()
     assert STONE_COMPONENT.is_file()
     assert CONTROL_PANEL_COMPONENT.is_file()
+    assert DIFFICULTY_SELECT_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -112,6 +114,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     board_component = BOARD_COMPONENT.read_text(encoding="utf-8")
     stone_component = STONE_COMPONENT.read_text(encoding="utf-8")
     control_panel = CONTROL_PANEL_COMPONENT.read_text(encoding="utf-8")
+    difficulty_select = DIFFICULTY_SELECT_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -120,6 +123,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'from "./components/AppLayout.vue"' in app
     assert 'from "./components/Board.vue"' in app
     assert 'from "./components/ControlPanel.vue"' in app
+    assert 'from "./components/DifficultySelect.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
     assert "<AppLayout>" in app
@@ -145,12 +149,24 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "emit('undo-move')" in control_panel
     assert "emit('end-game')" in control_panel
     assert "emit('restart-game')" in control_panel
+    assert "<DifficultySelect" in app
+    assert 'v-model:depth="state.settings.depth"' in app
+    assert 'v-model:difficulty="state.settings.difficulty"' in app
+    assert "DIFFICULTY_LEVELS" in difficulty_select
+    assert ':id="`difficulty-${level.id}`"' in difficulty_select
+    assert '{ id: "easy"' in difficulty_select
+    assert '{ id: "normal"' in difficulty_select
+    assert '{ id: "hard"' in difficulty_select
+    assert '{ id: "custom"' in difficulty_select
+    assert "depth: 2" in difficulty_select
+    assert "depth: 4" in difficulty_select
+    assert "depth: 6" in difficulty_select
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
-    assert 'id="search-depth-input"' in app
-    assert 'aria-describedby="search-depth-hint"' in app
-    assert "深度越高 AI 思考越慢" in app
+    assert 'id="search-depth-input"' in difficulty_select
+    assert 'aria-describedby="search-depth-hint"' in difficulty_select
+    assert "现有 depth 2/4/6" in difficulty_select
     assert 'id="api-base-input"' in app
     assert "?apiBase=" in app
     assert 'id="ai-first-input"' in app
@@ -163,7 +179,9 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert ".cell:hover:not(:disabled)" in css
     assert ".cell.is-latest::after" in css
     assert "export const BOARD_SIZE = 15" in game_state
+    assert 'export const DEFAULT_DIFFICULTY = "normal"' in game_state
     assert "reactive({" in game_state
+    assert "difficulty: DEFAULT_DIFFICULTY" in game_state
     assert "state.board" in app
 
 
