@@ -28,6 +28,7 @@ test("plays the main game path", async ({ page }) => {
   const startButton = page.locator("#start-button");
   const undoButton = page.locator("#undo-button");
   const endButton = page.locator("#end-button");
+  const restartButton = page.locator("#restart-button");
   const boardSizeInput = page.locator("#board-size-input");
   const searchDepthInput = page.locator("#search-depth-input");
   const apiBaseInput = page.locator("#api-base-input");
@@ -45,6 +46,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(startButton).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
+  await expect(restartButton).toBeDisabled();
 
   await boardSizeInput.fill("6");
   await searchDepthInput.fill("1");
@@ -57,6 +59,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(startButton).toBeDisabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeEnabled();
+  await expect(restartButton).toBeEnabled();
   await expect(boardSizeInput).toBeDisabled();
   await expect(searchDepthInput).toBeDisabled();
   await expect(apiBaseInput).toBeDisabled();
@@ -82,6 +85,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(board.locator('.cell[data-row="0"][data-col="0"]')).toHaveCSS("cursor", "crosshair");
   await expect(board.locator('.cell[data-row="0"][data-col="0"]')).toHaveCSS("background-color", "rgba(255, 248, 234, 0.32)");
   await expect(undoButton).toBeEnabled();
+  await expect(restartButton).toBeEnabled();
 
   await undoButton.click();
 
@@ -90,6 +94,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(board.locator(".cell.is-latest")).toHaveCount(0);
   await expect(page.locator("#move-list li")).toHaveCount(0);
   await expect(undoButton).toBeDisabled();
+  await expect(restartButton).toBeEnabled();
 
   await endButton.click();
 
@@ -100,7 +105,52 @@ test("plays the main game path", async ({ page }) => {
   await expect(apiBaseInput).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
+  await expect(restartButton).toBeDisabled();
   await expect(board.locator(".cell").first()).toBeDisabled();
+});
+
+test("restarts the active game from the control panel", async ({ page }) => {
+  let startCount = 0;
+  let endCount = 0;
+  const requestOrder = [];
+
+  await page.route("**/api/games/start", async (route) => {
+    startCount += 1;
+    requestOrder.push("start");
+    const requestBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ size: requestBody.size, current_depth: requestBody.depth })),
+    });
+  });
+
+  await page.route("**/api/games/e2e-session/end", async (route) => {
+    endCount += 1;
+    requestOrder.push("end");
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(snapshot({ winner: 0 })),
+    });
+  });
+
+  await page.goto("/");
+  await page.locator("#board-size-input").fill("6");
+  await page.locator("#search-depth-input").fill("1");
+  await page.locator("#start-button").click();
+
+  await expect(page.locator("#status")).toHaveText("进行中");
+  await expect(page.locator("#restart-button")).toBeEnabled();
+
+  await page.locator("#restart-button").click();
+
+  await expect(page.locator("#status")).toHaveText("进行中");
+  await expect(page.locator("#board .cell")).toHaveCount(36);
+  await expect(page.locator("#restart-button")).toBeEnabled();
+  expect(startCount).toBe(2);
+  expect(endCount).toBe(1);
+  expect(requestOrder).toEqual(["start", "end", "start"]);
 });
 
 test("keeps the page layout stable across desktop and narrow viewports", async ({ page }) => {
@@ -153,6 +203,7 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   const startButton = page.locator("#start-button");
   const undoButton = page.locator("#undo-button");
   const endButton = page.locator("#end-button");
+  const restartButton = page.locator("#restart-button");
   const boardSizeInput = page.locator("#board-size-input");
   const searchDepthInput = page.locator("#search-depth-input");
   const apiBaseInput = page.locator("#api-base-input");
@@ -167,6 +218,7 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   await expect(startButton).toBeDisabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
+  await expect(restartButton).toBeDisabled();
   await expect(boardSizeInput).toBeDisabled();
   await expect(searchDepthInput).toBeDisabled();
   await expect(apiBaseInput).toBeDisabled();
@@ -183,6 +235,7 @@ test("sends settings and disables controls while starting", async ({ page }) => 
   await expect(page.locator("#depth-value")).toHaveText("2");
   await expect(boardElement.locator(".cell")).toHaveCount(49);
   await expect(endButton).toBeEnabled();
+  await expect(restartButton).toBeEnabled();
   expect(requestBody).toEqual({ size: 7, ai_first: true, depth: 2 });
 });
 

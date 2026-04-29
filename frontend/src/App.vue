@@ -1,6 +1,7 @@
 <script setup>
 import AppLayout from "./components/AppLayout.vue";
 import Board from "./components/Board.vue";
+import ControlPanel from "./components/ControlPanel.vue";
 import { useGameState } from "./composables/useGameState";
 
 const props = defineProps({
@@ -10,7 +11,7 @@ const props = defineProps({
   },
 });
 
-const { state, boardStyle, startGame, playMove, undoMove, endGame, cellDisabled, isLatest } = useGameState({
+const { state, boardStyle, startGame, playMove, undoMove, endGame, restartGame, cellDisabled, isLatest } = useGameState({
   defaultApiBase: props.defaultApiBase,
 });
 
@@ -111,38 +112,16 @@ function formatPath(path) {
         </div>
       </div>
 
-      <div class="panel-section">
-        <p class="section-label">Controls</p>
-        <div class="button-row">
-          <button
-            id="start-button"
-            type="button"
-            :class="{ 'is-busy': state.isBusy }"
-            :disabled="state.isBusy || Boolean(state.sessionId)"
-            @click="startGame"
-          >
-            开始
-          </button>
-          <button
-            id="undo-button"
-            type="button"
-            :class="{ 'is-busy': state.isBusy }"
-            :disabled="state.isBusy || !state.sessionId || state.history.length === 0"
-            @click="undoMove"
-          >
-            悔棋
-          </button>
-          <button
-            id="end-button"
-            type="button"
-            :class="{ 'is-busy': state.isBusy }"
-            :disabled="state.isBusy || !state.sessionId"
-            @click="endGame"
-          >
-            结束
-          </button>
-        </div>
-      </div>
+      <ControlPanel
+        :can-restart="Boolean(state.sessionId) || state.history.length > 0 || Boolean(state.winner)"
+        :can-undo="state.history.length > 0"
+        :has-session="Boolean(state.sessionId)"
+        :is-busy="state.isBusy"
+        @end-game="endGame"
+        @restart-game="restartGame"
+        @start-game="startGame"
+        @undo-move="undoMove"
+      />
 
       <div class="panel-section stats-grid" aria-label="棋局状态">
         <div>

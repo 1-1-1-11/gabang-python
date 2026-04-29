@@ -11,6 +11,7 @@ GAME_STATE = FRONTEND_SRC / "composables" / "useGameState.js"
 APP_LAYOUT = FRONTEND_SRC / "components" / "AppLayout.vue"
 BOARD_COMPONENT = FRONTEND_SRC / "components" / "Board.vue"
 STONE_COMPONENT = FRONTEND_SRC / "components" / "Stone.vue"
+CONTROL_PANEL_COMPONENT = FRONTEND_SRC / "components" / "ControlPanel.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -100,6 +101,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert APP_LAYOUT.is_file()
     assert BOARD_COMPONENT.is_file()
     assert STONE_COMPONENT.is_file()
+    assert CONTROL_PANEL_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -109,6 +111,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     layout = APP_LAYOUT.read_text(encoding="utf-8")
     board_component = BOARD_COMPONENT.read_text(encoding="utf-8")
     stone_component = STONE_COMPONENT.read_text(encoding="utf-8")
+    control_panel = CONTROL_PANEL_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -116,6 +119,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "createApp(App" in main
     assert 'from "./components/AppLayout.vue"' in app
     assert 'from "./components/Board.vue"' in app
+    assert 'from "./components/ControlPanel.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
     assert "<AppLayout>" in app
@@ -132,6 +136,15 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'class="stone"' in stone_component
     assert "role === 1 ? 'black' : 'white'" in stone_component
     assert "'is-latest': isLatest" in stone_component
+    assert "<ControlPanel" in app
+    assert 'id="start-button"' in control_panel
+    assert 'id="undo-button"' in control_panel
+    assert 'id="end-button"' in control_panel
+    assert 'id="restart-button"' in control_panel
+    assert "emit('start-game')" in control_panel
+    assert "emit('undo-move')" in control_panel
+    assert "emit('end-game')" in control_panel
+    assert "emit('restart-game')" in control_panel
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -212,11 +225,19 @@ def test_frontend_handles_busy_state_and_non_json_errors():
 
 def test_frontend_updates_controls_from_session_state():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    control_panel = CONTROL_PANEL_COMPONENT.read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
-    assert ':disabled="state.isBusy || Boolean(state.sessionId)"' in app
-    assert ':disabled="state.isBusy || !state.sessionId || state.history.length === 0"' in app
-    assert ':disabled="state.isBusy || !state.sessionId"' in app
+    assert ':has-session="Boolean(state.sessionId)"' in app
+    assert ':can-undo="state.history.length > 0"' in app
+    assert ':can-restart="Boolean(state.sessionId) || state.history.length > 0 || Boolean(state.winner)"' in app
+    assert ':disabled="isBusy || hasSession"' in control_panel
+    assert ':disabled="isBusy || !hasSession || !canUndo"' in control_panel
+    assert ':disabled="isBusy || !hasSession"' in control_panel
+    assert ':disabled="isBusy || !canRestart"' in control_panel
+    assert "async function restartGame()" in game_state
+    assert "gameApi.endGame(state.sessionId)" in game_state
+    assert "gameApi.startGame(state.settings)" in game_state
     assert "function cellDisabled(row, col)" in game_state
     assert "state.isBusy || !state.sessionId || Boolean(state.winner)" in game_state
 

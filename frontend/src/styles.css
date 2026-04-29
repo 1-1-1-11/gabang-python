@@ -272,6 +272,10 @@ h1 {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.control-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .button-row button {
   min-width: 0;
   padding: 0 12px;

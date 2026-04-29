@@ -138,6 +138,30 @@ export function useGameState(options = {}) {
     }
   }
 
+  async function restartGame() {
+    if (state.isBusy || (!state.sessionId && state.history.length === 0 && !state.winner)) {
+      return;
+    }
+    setBusy(true);
+    setStatus(state.sessionId ? "重开中" : "连接中");
+    try {
+      syncApiBase();
+      if (state.sessionId) {
+        const endedSnapshot = await gameApi.endGame(state.sessionId);
+        applySnapshot(endedSnapshot);
+        state.sessionId = null;
+      }
+      const snapshot = await gameApi.startGame(state.settings);
+      state.depth = Number(state.settings.depth);
+      applySnapshot(snapshot);
+      setStatus("进行中");
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function cellDisabled(row, col) {
     return state.isBusy || !state.sessionId || Boolean(state.winner) || state.board[row]?.[col] !== 0;
   }
@@ -158,6 +182,7 @@ export function useGameState(options = {}) {
     playMove,
     undoMove,
     endGame,
+    restartGame,
     cellDisabled,
     isLatest,
   };
