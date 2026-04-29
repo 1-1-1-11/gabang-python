@@ -9,6 +9,7 @@ FRONTEND_SRC = FRONTEND / "src"
 API_CLIENT = FRONTEND_SRC / "api" / "client.js"
 GAME_STATE = FRONTEND_SRC / "composables" / "useGameState.js"
 APP_LAYOUT = FRONTEND_SRC / "components" / "AppLayout.vue"
+THEME_CSS = FRONTEND_SRC / "theme.css"
 BOARD_COMPONENT = FRONTEND_SRC / "components" / "Board.vue"
 STONE_COMPONENT = FRONTEND_SRC / "components" / "Stone.vue"
 CONTROL_PANEL_COMPONENT = FRONTEND_SRC / "components" / "ControlPanel.vue"
@@ -103,6 +104,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert (FRONTEND_SRC / "App.vue").is_file()
     assert (FRONTEND_SRC / "main.js").is_file()
     assert (FRONTEND_SRC / "styles.css").is_file()
+    assert THEME_CSS.is_file()
     assert GAME_STATE.is_file()
     assert APP_LAYOUT.is_file()
     assert BOARD_COMPONENT.is_file()
@@ -119,6 +121,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
 def test_frontend_assets_define_board_and_api_placeholders():
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     css = (FRONTEND_SRC / "styles.css").read_text(encoding="utf-8")
+    theme = THEME_CSS.read_text(encoding="utf-8")
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
     layout = APP_LAYOUT.read_text(encoding="utf-8")
     board_component = BOARD_COMPONENT.read_text(encoding="utf-8")
@@ -135,6 +138,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
 
     assert 'data-api-base="http://127.0.0.1:8000"' in html
     assert "createApp(App" in main
+    assert 'import "./theme.css";' in main
     assert 'from "./components/AppLayout.vue"' in app
     assert 'from "./components/Board.vue"' in app
     assert 'from "./components/ControlPanel.vue"' in app
@@ -240,6 +244,15 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert "?apiBase=" in app
     assert 'id="ai-first-input"' in app
     assert ".field-hint" in css
+    assert "--space-md: 12px" in theme
+    assert "--radius-sm: 4px" in theme
+    assert "--shadow-panel:" in theme
+    assert "--board-wood:" in theme
+    assert "--focus-ring:" in theme
+    assert "var(--radius-sm)" in css
+    assert "var(--shadow-panel)" in css
+    assert "var(--board-wood)" in css
+    assert "button:focus-visible" in css
     assert ".app-shell" in css
     assert ".play-surface" in css
     assert ".side-panel" in css

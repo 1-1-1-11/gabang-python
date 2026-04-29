@@ -1,0 +1,44 @@
+:root {
+  --ink: #181b18;
+  --muted-ink: #5f665d;
+  --paper: #eef1e9;
+  --surface: #fbfaf4;
+  --surface-muted: #f0eadf;
+  --panel: #fff8ea;
+  --line: #5f4223;
+  --board-wood: #d7aa62;
+  --accent: #b63c2e;
+  --jade: #176b5f;
+  --brass: #c49a4b;
+  --stone-black: #151515;
+  --stone-white: #f7f0e1;
+
+  --border: rgba(24, 27, 24, 0.16);
+  --ink-line: rgba(22, 19, 14, 0.42);
+  --jade-line: rgba(23, 107, 95, 0.72);
+  --jade-wash: rgba(23, 107, 95, 0.08);
+  --accent-line: rgba(182, 60, 46, 0.52);
+  --accent-wash: rgba(182, 60, 46, 0.1);
+  --brass-line: rgba(196, 154, 75, 0.5);
+  --brass-wash: rgba(196, 154, 75, 0.1);
+
+  --space-2xs: 4px;
+  --space-xs: 6px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 18px;
+  --space-xl: 24px;
+  --space-2xl: 36px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-pill: 999px;
+
+  --control-height: 42px;
+  --field-height: 38px;
+  --shadow-panel: 0 18px 46px rgba(24, 27, 24, 0.16);
+  --shadow-board: 0 10px 26px rgba(95, 66, 35, 0.18);
+  --shadow-stone: 0 7px 11px rgba(24, 27, 24, 0.22);
+  --focus-ring: 0 0 0 3px rgba(23, 107, 95, 0.28);
+  --shadow: var(--shadow-panel);
+}
