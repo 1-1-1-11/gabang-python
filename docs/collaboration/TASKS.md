@@ -57,10 +57,10 @@
 | Task 23.A: 协作机制与任务计划落地 | 产品化升级 | 已完成 | 创建可执行任务计划，固化 subagent 审查、commit/push 和留痕规则 | `docs/collaboration/reviews/23A-collaboration-plan.md`：PASS；实现 commit `5e45d44`；已推送 main |
 | Task 23.B: AI 优化基线与第一轮算法优化 | 产品化升级 | 已完成（B-10 已审查 PASS；下一步 C-02） | 建立 AI benchmark 和战术测试，再实施低风险算法优化 | B-01 已扩展开局、中盘、立即胜、必须防、简单连续威胁 benchmark；`python -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`python -m pytest backend\tests\test_ai_search.py -q`：16 passed；审查文件 `docs/collaboration/reviews/B-01-ai-benchmark-baseline.md`：PASS；实现 commit `7c3f045`；备注 commit `1997ea9`；push 状态：已推送 main；B-02 已补充水平、垂直、反斜线立即胜固定坐标测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：19 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-02-immediate-win-tests.md`：PASS；实现 commit `4034db7`；备注 commit `79647ec`；push 状态：已推送 main；B-03 已补充水平、垂直、反斜线必须防守固定坐标测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：22 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-03-must-block-tests.md`：PASS；实现 commit `398d855`；备注 commit `5a252c2`；push 状态：已推送 main；B-04 已补充 `minmax`、`vct`、`vcf` 连续威胁路径测试；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：25 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；审查文件 `docs/collaboration/reviews/B-04-continuous-threat-tests.md`：PASS；实现 commit `f939166`；备注 commit `6bb8aba`；push 状态：已推送 main；B-05 已实现局部终局判断与 undo winner 恢复；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_board.py -q`：24 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：25 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：104 passed；审查文件 `docs/collaboration/reviews/B-05-local-winner-check.md`：PASS；实现 commit `0b58ba3`；备注 commit `19684cd`；push 状态：已推送 main；B-06 已实现候选点局部化，空盘回中心，内部扫描池小于全盘空点；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_search.py -q`：26 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_benchmark.py -q`：5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：105 passed；中盘 benchmark 耗时约 0.30s，低于 B-06 前约 0.42s；审查文件 `docs/collaboration/reviews/B-06-local-candidate-points.md`：PASS；实现 commit `749f97c`；备注 commit `1037d51`；push 状态：已推送 main；裸 `python` 当前命中 WindowsApps stub，详见 `.learnings/ERRORS.md` |
 | Task 23.C: Vue3 + Vite 前端架构初始化 | 产品化升级 | 已完成（C-09 已审查 PASS；下一步 D-01） | 引入 Vue3 + Vite，建立现代前端工程结构 | C-02：`npm run build` 通过；`npm run test:e2e` 5 passed；`.\.venv\Scripts\python.exe -m pytest backend\tests -q` 108 passed；C-03：API client 已抽出，Vite/E2E/文档端口统一到 `5173`，`npm run build` 通过，Playwright `5 passed`，pytest `108 passed`；C-04：游戏状态已抽到 composable，Playwright `5 passed`，pytest `108 passed`；C-06：启动契约测试已固化，Playwright `5 passed`，pytest `109 passed`；C-09：`GameSnapshot.search_metrics` 已新增，Playwright `5 passed`，pytest `109 passed` |
-| Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 进行中（D-12 进行中） | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
+| Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 进行中（D-12 已完成；下一步 D-13） | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
 | Task 23.E: 复盘、质量收敛与留痕 | 产品化升级 | 待开始 | 汇总测试、审查、commit、push 和下一阶段路线 | 台账可追溯，无未处理 Blocker/Major |
 
-> 最新状态（2026-04-29）：Task 23.D 已完成 D-01 页面整体布局、D-02 棋盘组件、D-03 棋子组件、D-04 控制面板、D-05 难度选择、D-06 AI 思考状态、D-07 落子记录、D-08 搜索信息展示、D-09 错误提示、D-10 游戏结束状态和 D-11 主题与视觉规范；当前进行 D-12 浏览器 E2E 主路径。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
+> 最新状态（2026-04-29）：Task 23.D 已完成 D-01 页面整体布局、D-02 棋盘组件、D-03 棋子组件、D-04 控制面板、D-05 难度选择、D-06 AI 思考状态、D-07 落子记录、D-08 搜索信息展示、D-09 错误提示、D-10 游戏结束状态、D-11 主题与视觉规范和 D-12 浏览器 E2E 主路径；下一步进入 D-13 响应式验收。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
 
 ### Task 23.B 子任务留痕
 
@@ -293,6 +293,18 @@
   - push 状态：已推送 main，远程 `origin/main` 已确认指向 `edd1c93420e0afc8ca9d96db51e67a142c43371b`。
   - 遗留风险：D-11 是主题 token 化，不重新设计布局；subagent review 因当前 usage limit 不可用，已用本地可重复门禁替代并留痕。
   - 下一步：D-12 浏览器 E2E 主路径。
+
+- D-12：浏览器 E2E 主路径
+  - 状态：已完成。
+  - 实际分支/worktree：`main` / `D:\Desktop\JOYland\林杯五子棋大赛\gobang-master`。
+  - 实现范围：`e2e/gobang.spec.js` 在真实主路径测试中记录非 OPTIONS 的 `/api/games` 请求，显式断言 start、move、undo、end 四个业务 API 顺序；`backend/tests/test_frontend_skeleton.py` 新增 Playwright 主路径契约测试，锁定 API 调用链断言存在。
+  - 验证方式：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_frontend_skeleton.py -q`：`12 passed`；`npm run build`：通过；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：`110 passed`；`npm run test:e2e`：`10 passed`；`git diff --check` / `git diff --cached --check`：无空白错误。
+  - 审查文件：`docs/collaboration/reviews/D-12-browser-main-path.md`：PASS，带记录边界。
+  - Blocker/Major 处理：无。
+  - 实现 commit：`1c37be8`。
+  - push 状态：已推送 main，远程 `origin/main` 已确认指向 `1c37be8c00664f8da0b91317344482ef1d9c8fce`。
+  - 遗留风险：主路径断言只过滤 CORS 预检 OPTIONS，不 mock start/move/undo/end；subagent review 因当前 usage limit 不可用，已用本地可重复门禁替代并留痕。
+  - 下一步：D-13 响应式验收。
 
 ### Task 23 文档校准留痕
 
