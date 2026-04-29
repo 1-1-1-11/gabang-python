@@ -31,6 +31,7 @@ export function useGameState(options = {}) {
     bestPath: [],
     currentDepth: null,
     searchMetrics: null,
+    errorMessage: "",
     isBusy: false,
     status: "待开始",
     settings: {
@@ -51,6 +52,19 @@ export function useGameState(options = {}) {
 
   function setBusy(isBusy) {
     state.isBusy = isBusy;
+  }
+
+  function clearError() {
+    state.errorMessage = "";
+  }
+
+  function setError(message) {
+    state.errorMessage = message;
+    setStatus(message);
+  }
+
+  function dismissError() {
+    state.errorMessage = "";
   }
 
   function syncApiBase() {
@@ -76,6 +90,7 @@ export function useGameState(options = {}) {
       return;
     }
     setBusy(true);
+    clearError();
     setStatus(state.settings.aiFirst ? "AI 思考" : "连接中");
     try {
       syncApiBase();
@@ -84,7 +99,7 @@ export function useGameState(options = {}) {
       applySnapshot(snapshot);
       setStatus("进行中");
     } catch (error) {
-      setStatus(error.message);
+      setError(error.message);
     } finally {
       setBusy(false);
     }
@@ -95,13 +110,14 @@ export function useGameState(options = {}) {
       return;
     }
     setBusy(true);
+    clearError();
     setStatus("AI 思考");
     try {
       const snapshot = await gameApi.playMove(state.sessionId, [row, col], state.depth);
       applySnapshot(snapshot);
       setStatus(snapshot.winner ? "已结束" : "进行中");
     } catch (error) {
-      setStatus(error.message);
+      setError(error.message);
     } finally {
       setBusy(false);
     }
@@ -112,12 +128,13 @@ export function useGameState(options = {}) {
       return;
     }
     setBusy(true);
+    clearError();
     try {
       const snapshot = await gameApi.undoMove(state.sessionId);
       applySnapshot(snapshot);
       setStatus("已悔棋");
     } catch (error) {
-      setStatus(error.message);
+      setError(error.message);
     } finally {
       setBusy(false);
     }
@@ -128,13 +145,14 @@ export function useGameState(options = {}) {
       return;
     }
     setBusy(true);
+    clearError();
     try {
       const snapshot = await gameApi.endGame(state.sessionId);
       applySnapshot(snapshot);
       state.sessionId = null;
       setStatus("已结束");
     } catch (error) {
-      setStatus(error.message);
+      setError(error.message);
     } finally {
       setBusy(false);
     }
@@ -145,6 +163,7 @@ export function useGameState(options = {}) {
       return;
     }
     setBusy(true);
+    clearError();
     setStatus(state.sessionId ? "重开中" : "连接中");
     try {
       syncApiBase();
@@ -158,7 +177,7 @@ export function useGameState(options = {}) {
       applySnapshot(snapshot);
       setStatus("进行中");
     } catch (error) {
-      setStatus(error.message);
+      setError(error.message);
     } finally {
       setBusy(false);
     }
@@ -178,6 +197,9 @@ export function useGameState(options = {}) {
     boardStyle,
     setStatus,
     setBusy,
+    clearError,
+    setError,
+    dismissError,
     syncApiBase,
     applySnapshot,
     startGame,

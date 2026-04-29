@@ -16,6 +16,7 @@ DIFFICULTY_SELECT_COMPONENT = FRONTEND_SRC / "components" / "DifficultySelect.vu
 THINKING_INDICATOR_COMPONENT = FRONTEND_SRC / "components" / "ThinkingIndicator.vue"
 MOVE_HISTORY_COMPONENT = FRONTEND_SRC / "components" / "MoveHistory.vue"
 SEARCH_INFO_COMPONENT = FRONTEND_SRC / "components" / "SearchInfo.vue"
+ERROR_BANNER_COMPONENT = FRONTEND_SRC / "components" / "ErrorBanner.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -110,6 +111,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert THINKING_INDICATOR_COMPONENT.is_file()
     assert MOVE_HISTORY_COMPONENT.is_file()
     assert SEARCH_INFO_COMPONENT.is_file()
+    assert ERROR_BANNER_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -124,6 +126,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     thinking_indicator = THINKING_INDICATOR_COMPONENT.read_text(encoding="utf-8")
     move_history = MOVE_HISTORY_COMPONENT.read_text(encoding="utf-8")
     search_info = SEARCH_INFO_COMPONENT.read_text(encoding="utf-8")
+    error_banner = ERROR_BANNER_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
@@ -133,6 +136,7 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'from "./components/Board.vue"' in app
     assert 'from "./components/ControlPanel.vue"' in app
     assert 'from "./components/DifficultySelect.vue"' in app
+    assert 'from "./components/ErrorBanner.vue"' in app
     assert 'from "./components/MoveHistory.vue"' in app
     assert 'from "./components/SearchInfo.vue"' in app
     assert 'from "./components/ThinkingIndicator.vue"' in app
@@ -205,6 +209,13 @@ def test_frontend_assets_define_board_and_api_placeholders():
     assert 'id="search-cache-hits-value"' in search_info
     assert '"cache_hits"' in search_info
     assert "function formatPath(path)" in search_info
+    assert "<ErrorBanner" in app
+    assert ':message="state.errorMessage"' in app
+    assert '@dismiss="dismissError"' in app
+    assert 'id="error-banner"' in error_banner
+    assert 'id="error-message"' in error_banner
+    assert 'id="error-dismiss-button"' in error_banner
+    assert 'role="alert"' in error_banner
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -278,6 +289,9 @@ def test_frontend_handles_busy_state_and_non_json_errors():
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert "isBusy" in app
+    assert "errorMessage" in game_state
+    assert "function setError(message)" in game_state
+    assert "function dismissError()" in game_state
     assert "setBusy(true)" in game_state
     assert "setBusy(false)" in game_state
     assert "response.text()" in client
@@ -285,7 +299,7 @@ def test_frontend_handles_busy_state_and_non_json_errors():
     assert "throw new Error" in client
     assert "payload.detail" in client
     assert "catch (error)" in game_state
-    assert "setStatus(error.message)" in game_state
+    assert "setError(error.message)" in game_state
 
 
 def test_frontend_updates_controls_from_session_state():

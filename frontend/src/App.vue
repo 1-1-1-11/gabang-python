@@ -3,6 +3,7 @@ import AppLayout from "./components/AppLayout.vue";
 import Board from "./components/Board.vue";
 import ControlPanel from "./components/ControlPanel.vue";
 import DifficultySelect from "./components/DifficultySelect.vue";
+import ErrorBanner from "./components/ErrorBanner.vue";
 import MoveHistory from "./components/MoveHistory.vue";
 import SearchInfo from "./components/SearchInfo.vue";
 import ThinkingIndicator from "./components/ThinkingIndicator.vue";
@@ -15,7 +16,7 @@ const props = defineProps({
   },
 });
 
-const { state, boardStyle, startGame, playMove, undoMove, endGame, restartGame, cellDisabled, isLatest } = useGameState({
+const { state, boardStyle, startGame, playMove, undoMove, endGame, restartGame, dismissError, cellDisabled, isLatest } = useGameState({
   defaultApiBase: props.defaultApiBase,
 });
 
@@ -112,6 +113,8 @@ function roleName(role) {
         @start-game="startGame"
         @undo-move="undoMove"
       />
+
+      <ErrorBanner :message="state.errorMessage" @dismiss="dismissError" />
 
       <div class="panel-section">
         <p class="section-label">Thinking</p>

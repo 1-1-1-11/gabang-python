@@ -54,6 +54,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#thinking-nodes-value")).toHaveText("-");
   await expect(page.locator("#thinking-prunes-value")).toHaveText("-");
   await expect(page.locator("#move-empty")).toHaveText("暂无落子");
+  await expect(page.locator("#error-banner")).toHaveCount(0);
   await expect(startButton).toBeEnabled();
   await expect(undoButton).toBeDisabled();
   await expect(endButton).toBeDisabled();
@@ -396,12 +397,16 @@ test("recovers controls after json error responses", async ({ page }) => {
   await page.locator("#start-button").click();
 
   await expect(page.locator("#status")).toHaveText("服务暂不可用");
+  await expect(page.locator("#error-banner")).toBeVisible();
+  await expect(page.locator("#error-message")).toHaveText("服务暂不可用");
   await expect(page.locator("#start-button")).toBeEnabled();
   await expect(page.locator("#board-size-input")).toBeEnabled();
   await expect(page.locator("#difficulty-easy")).toBeEnabled();
   await expect(page.locator("#api-base-input")).toBeEnabled();
   await expect(page.locator("#undo-button")).toBeDisabled();
   await expect(page.locator("#end-button")).toBeDisabled();
+  await page.locator("#error-dismiss-button").click();
+  await expect(page.locator("#error-banner")).toHaveCount(0);
 });
 
 test("recovers controls after non-json responses", async ({ page }) => {
@@ -419,6 +424,8 @@ test("recovers controls after non-json responses", async ({ page }) => {
   await page.locator("#start-button").click();
 
   await expect(page.locator("#status")).toHaveText("响应格式错误");
+  await expect(page.locator("#error-banner")).toBeVisible();
+  await expect(page.locator("#error-message")).toHaveText("响应格式错误");
   await expect(page.locator("#start-button")).toBeEnabled();
   await expect(page.locator("#board-size-input")).toBeEnabled();
   await expect(page.locator("#difficulty-easy")).toBeEnabled();
