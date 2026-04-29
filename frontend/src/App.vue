@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from "./components/AppLayout.vue";
+import Board from "./components/Board.vue";
 import { useGameState } from "./composables/useGameState";
 
 const props = defineProps({
@@ -46,32 +47,15 @@ function formatPath(path) {
     </template>
 
     <template #board>
-      <div
-        id="board"
-        class="board"
-        :class="{ 'is-busy': state.isBusy }"
-        role="grid"
-        :aria-label="`${state.size} x ${state.size} 五子棋棋盘`"
-        :style="boardStyle"
-      >
-        <template v-for="(rowCells, row) in state.board" :key="row">
-          <button
-            v-for="(role, col) in rowCells"
-            :key="`${row}-${col}`"
-            class="cell"
-            :class="{ 'is-latest': isLatest(row, col) }"
-            type="button"
-            role="gridcell"
-            :aria-label="`row ${row + 1}, column ${col + 1}`"
-            :data-row="row"
-            :data-col="col"
-            :disabled="cellDisabled(row, col)"
-            @click="playMove(row, col)"
-          >
-            <span v-if="role !== 0" class="stone" :class="role === 1 ? 'black' : 'white'" aria-hidden="true"></span>
-          </button>
-        </template>
-      </div>
+      <Board
+        :board="state.board"
+        :board-style="boardStyle"
+        :cell-disabled="cellDisabled"
+        :is-busy="state.isBusy"
+        :is-latest="isLatest"
+        :size="state.size"
+        @play-move="playMove"
+      />
     </template>
 
     <template #panel>

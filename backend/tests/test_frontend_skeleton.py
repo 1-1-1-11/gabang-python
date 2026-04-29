@@ -9,6 +9,7 @@ FRONTEND_SRC = FRONTEND / "src"
 API_CLIENT = FRONTEND_SRC / "api" / "client.js"
 GAME_STATE = FRONTEND_SRC / "composables" / "useGameState.js"
 APP_LAYOUT = FRONTEND_SRC / "components" / "AppLayout.vue"
+BOARD_COMPONENT = FRONTEND_SRC / "components" / "Board.vue"
 
 
 class ElementCollector(HTMLParser):
@@ -96,6 +97,7 @@ def test_frontend_index_wires_css_js_and_app_shell():
     assert (FRONTEND_SRC / "styles.css").is_file()
     assert GAME_STATE.is_file()
     assert APP_LAYOUT.is_file()
+    assert BOARD_COMPONENT.is_file()
 
 
 def test_frontend_assets_define_board_and_api_placeholders():
@@ -103,18 +105,24 @@ def test_frontend_assets_define_board_and_api_placeholders():
     css = (FRONTEND_SRC / "styles.css").read_text(encoding="utf-8")
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
     layout = APP_LAYOUT.read_text(encoding="utf-8")
+    board_component = BOARD_COMPONENT.read_text(encoding="utf-8")
     main = (FRONTEND_SRC / "main.js").read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert 'data-api-base="http://127.0.0.1:8000"' in html
     assert "createApp(App" in main
     assert 'from "./components/AppLayout.vue"' in app
+    assert 'from "./components/Board.vue"' in app
     assert 'from "./composables/useGameState"' in app
     assert "useGameState({" in app
     assert "<AppLayout>" in app
+    assert "<Board" in app
     assert '<slot name="board"' in layout
     assert 'class="play-surface"' in layout
     assert 'class="side-panel"' in layout
+    assert 'id="board"' in board_component
+    assert 'class="cell"' in board_component
+    assert "@click=\"emit('play-move', row, col)\"" in board_component
     assert 'id="board-size-input"' in app
     assert 'aria-describedby="board-size-hint"' in app
     assert "范围 5-25" in app
@@ -156,6 +164,7 @@ def test_frontend_calls_game_api_endpoints():
 
 def test_frontend_renders_api_snapshots():
     app = (FRONTEND_SRC / "App.vue").read_text(encoding="utf-8")
+    board_component = BOARD_COMPONENT.read_text(encoding="utf-8")
     game_state = GAME_STATE.read_text(encoding="utf-8")
 
     assert "function applySnapshot(snapshot)" in game_state
@@ -167,7 +176,7 @@ def test_frontend_renders_api_snapshots():
     assert "snapshot.search_metrics" in game_state
     assert "state.board[row]?.[col]" in game_state
     assert "latestMove" in game_state
-    assert "'is-latest'" in app
+    assert "'is-latest'" in board_component
     assert "move.i + 1" in app
     assert "move.j + 1" in app
     assert "function formatPath(path)" in app
