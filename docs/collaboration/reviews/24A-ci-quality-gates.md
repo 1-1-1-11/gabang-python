@@ -33,7 +33,7 @@
 ## Notes
 
 - 本文件是本地确定性审查记录；当前环境未使用独立 subagent。
-- GitHub Actions 云端首跑需要在推送后观察，本地无法证明 runner 环境一定完全一致。
+- GitHub Actions 云端首跑已触发但 job 未开始执行；check annotation 显示账户因 billing issue 被锁定。
 - 若后续要迁移到 Linux runner，应先让 Playwright 后端启动命令跨平台可配置。
 
 ## Verdict
