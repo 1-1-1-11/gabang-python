@@ -70,12 +70,12 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#ai-depth-value")).toHaveText("-");
   await expect(page.locator("#best-path-value")).toHaveText("-");
   await expect(page.locator("#search-nodes-value")).toHaveText("-");
-  await expect(page.locator("#search-prunes-value")).toHaveText("-");
+  await expect(page.locator("#search-beta-cutoffs-value")).toHaveText("-");
   await expect(page.locator("#search-cache-hits-value")).toHaveText("-");
   await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
   await expect(page.locator("#thinking-elapsed-value")).toHaveText("-");
   await expect(page.locator("#thinking-nodes-value")).toHaveText("-");
-  await expect(page.locator("#thinking-prunes-value")).toHaveText("-");
+  await expect(page.locator("#thinking-beta-cutoffs-value")).toHaveText("-");
   await expect(page.locator("#move-empty")).toHaveText("暂无落子");
   await expect(page.locator("#error-banner")).toHaveCount(0);
   await expect(page.locator("#game-result")).toHaveCount(0);
@@ -108,7 +108,7 @@ test("plays the main game path", async ({ page }) => {
   await expect(page.locator("#ai-depth-value")).toHaveText("2");
   await expect(page.locator("#best-path-value")).toHaveText(/^(?:\([1-9]\d*, [1-9]\d*\))(?: → \([1-9]\d*, [1-9]\d*\))*$/);
   await expect(page.locator("#search-nodes-value")).not.toHaveText("-");
-  await expect(page.locator("#search-prunes-value")).not.toHaveText("-");
+  await expect(page.locator("#search-beta-cutoffs-value")).not.toHaveText("-");
   await expect(page.locator("#search-cache-hits-value")).not.toHaveText("-");
   await expect(page.locator("#thinking-state-value")).toHaveText("AI 待命");
   await expect(page.locator("#thinking-nodes-value")).not.toHaveText("-");
@@ -399,7 +399,7 @@ test("shows thinking state while AI move is pending and then renders search metr
         current_depth: 2,
         search_metrics: {
           nodes: 42,
-          prunes: 5,
+          beta_cutoffs: 5,
           cache_hits: 3,
           cache_stores: 7,
           candidate_moves: 12,
@@ -428,9 +428,9 @@ test("shows thinking state while AI move is pending and then renders search metr
   await expect(page.locator("#thinking-elapsed-value")).toHaveText(/\d+\.\d ms/);
   await expect(page.locator("#thinking-elapsed-value")).not.toHaveText("-");
   await expect(page.locator("#thinking-nodes-value")).toHaveText("42");
-  await expect(page.locator("#thinking-prunes-value")).toHaveText("5");
+  await expect(page.locator("#thinking-beta-cutoffs-value")).toHaveText("5");
   await expect(page.locator("#search-nodes-value")).toHaveText("42");
-  await expect(page.locator("#search-prunes-value")).toHaveText("5");
+  await expect(page.locator("#search-beta-cutoffs-value")).toHaveText("5");
   await expect(page.locator("#search-cache-hits-value")).toHaveText("3");
   await expect(page.locator("#best-path-value")).toHaveText("(3, 4)");
 });
