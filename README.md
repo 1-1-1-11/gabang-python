@@ -19,7 +19,7 @@
 未完成：
 
 - E-07 文档一致性检查和 E-08 发布前风险清单仍需完成。
-- `d37ac32` 引入的迭代加深、静态搜索和 `beta_cutoffs` 指标已被回归测试覆盖，但棋力收益还没有单独评估。
+- `d37ac32` 引入的迭代加深、静态搜索和 `beta_cutoffs` 指标已有 24-B 固定局面评估基线，但还没有跨版本棋力收益证明。
 - 节点预算、时间预算、真实棋力评测、生产部署和比赛系统还不属于当前 MVP。
 - Redis 后端只提供基础跨进程会话共享，不提供同一 session 的分布式写锁。
 
@@ -247,7 +247,7 @@ backend/tests/test_ai_benchmark.py
 | 痛点 | 证据 | 风险 | 当前处理策略 |
 | --- | --- | --- | --- |
 | README/TASKS/CLAUDE 需要持续对齐 | E-07 已被列为下一步 | 后续 agent 可能误用旧端口、旧任务状态或旧指标字段 | 文档一致性检查单独成任务，修正 tracked 文档并记录本地 AGENTS 边界 |
-| AI 收益未独立证明 | `d37ac32` 已通过回归，但没有固定局面对比复盘 | 测试通过可能被误读为棋力提升已证明 | 下一轮先做 AI 指标与棋力评估，再决定预算能力和置换表增强 |
+| AI 收益仍需跨版本证明 | 24-B 已建立 post-`d37ac32` 固定局面评估基线 | 当前证据证明可复测行为，不证明相对旧提交棋力提升 | 后续若要证明收益，需要跨提交基线或更多固定局面对比 |
 | CI 初始门禁云端首跑被阻塞 | 24-A 已新增 GitHub Actions workflow，本地同等门禁通过；GitHub annotation 显示账户 billing issue 阻止 job 启动 | 云端质量门禁暂不能提供保护 | 恢复 GitHub Actions 计费/账户状态后 rerun workflow，再决定是否拆 Linux 兼容、缓存或 artifact 上传 |
 | Redis 不是完整分布式协作方案 | Redis session store 不含 per-session lock | 多实例下同一 session 并发写可能冲突 | 当前文档明确边界，生产前再做并发写保护任务 |
 | 可访问性仍是基础级 | D-14 做了 aria/focus 基础，没有 axe 自动审计 | 复杂交互可能仍有辅助技术盲区 | 下一轮补 axe 或等价扫描，并把关键路径纳入自动验收 |
@@ -267,7 +267,7 @@ backend/tests/test_ai_benchmark.py
 | P0 | E-07 文档一致性检查 | README、CLAUDE、TASKS、任务计划和本地 AGENTS 扫描已发现 README 过期 | tracked 文档不再指向旧 D-01、旧剪枝指标名或旧端口 |
 | P0 | E-08 发布前风险清单 | MVP 是否进入下一轮需要清楚区分已覆盖和未覆盖 | 风险清单列出 AI 收益、subagent、Redis 并发、CI 和部署边界 |
 | P1 | CI 首跑恢复与门禁收紧 | 24-A 已新增初始 GitHub Actions workflow，但云端 job 被 billing issue 阻止启动 | 账户恢复后 rerun，首跑通过再考虑 Linux 兼容、缓存优化、artifact 上传和分 job 并行 |
-| P1 | AI 指标与棋力复盘 | `d37ac32` 的收益还缺固定局面对比 | 固定局面记录 nodes、beta_cutoffs、cache_hits、耗时和选点稳定性 |
+| P1 | AI 跨版本收益评估 | 24-B 已记录当前固定局面基线，但还没有旧版本对照 | 增加跨提交或固定版本对照，比较 nodes、beta_cutoffs、cache_hits、耗时和选点稳定性 |
 | P2 | 部署与比赛能力 | 多实例、部署和比赛体验超出当前 MVP | Redis 并发演练、Docker/公网部署、房间/观战/排行榜分任务进入下一轮 |
 
 ### 不建议现在插入的任务
