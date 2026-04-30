@@ -2,24 +2,24 @@
 
 五子棋 AI 项目。当前仓库以 Python/FastAPI 承载棋盘规则、AI 搜索和游戏会话管理，并使用全新 Vue3 + Vite 前端提供本地对弈与演示界面。
 
-本 README 反映 2026-04-28 的真实项目进度：Task 23.A、23.B、23.C 已完成，下一步进入 Task 23.D 的 D-01 页面整体布局。详细任务台账见 `docs/collaboration/TASKS.md`，产品化升级计划见 `docs/collaboration/任务计划.md`。
+本 README 反映 2026-04-30 的真实项目进度：Task 23.A、23.B、23.C、23.D 已完成，Task 23.E 已完成后端回归、前端构建、E2E 回归、审查汇总、GitHub 留痕汇总和下一阶段路线；下一步是 E-07 文档一致性检查与 E-08 发布前风险清单。详细任务台账见 `docs/collaboration/TASKS.md`，产品化升级计划见 `docs/collaboration/任务计划.md`。
 
 ## 当前状态
 
 已完成：
 
 - 后端：FastAPI 游戏 API、棋盘规则、胜负判断、悔棋、会话管理、可选 Redis 会话存储。
-- AI：negamax / alpha-beta 搜索、VCT / VCF 入口、Zobrist 缓存、候选点局部化、走法排序、搜索指标记录。
+- AI：negamax / alpha-beta 搜索、VCT / VCF 入口、Zobrist 缓存、候选点局部化、走法排序、迭代加深、静态搜索和搜索指标记录。
 - API 合同：游戏接口统一返回 `GameSnapshot`，其中包含 `search_metrics`。
-- 前端工程：Vue3 + Vite 已落地，API client 与 `useGameState` 状态模块已拆出。
-- 验收：后端 pytest、Playwright E2E、Vite build 已作为当前回归基线。
-- 协作：每个最小任务要求自测、subagent 审查、commit、push 和文档留痕。
+- 前端工程：Vue3 + Vite 已落地，API client、`useGameState` 状态模块、布局、棋盘、棋子、控制面板、难度、AI 思考、落子记录、搜索信息、错误提示、结束状态、主题、响应式和基础可访问性已完成。
+- 验收：当前收敛基线为后端 `112 passed`、Vite build 通过、Playwright E2E `12 passed`。
+- 协作：每个最小任务要求自测、审查记录、commit、push 和文档留痕；subagent 不可用时使用本地确定性审查并写明边界。
 
 未完成：
 
-- D 阶段 UI 产品化尚未开始，当前页面仍是可运行控制台，不是最终视觉体验。
-- `search_metrics` 已进入 API 和前端状态，但还没有完整 UI 展示。
-- 节点预算、时间预算、迭代加深、真实棋力评测和生产部署还不属于当前 MVP。
+- E-07 文档一致性检查和 E-08 发布前风险清单仍需完成。
+- `d37ac32` 引入的迭代加深、静态搜索和 `beta_cutoffs` 指标已被回归测试覆盖，但棋力收益还没有单独评估。
+- 节点预算、时间预算、真实棋力评测、CI、生产部署和比赛系统还不属于当前 MVP。
 - Redis 后端只提供基础跨进程会话共享，不提供同一 session 的分布式写锁。
 
 ## 快速启动
@@ -122,7 +122,9 @@ http://127.0.0.1:5173/?apiBase=http://127.0.0.1:9000
 - 配置是否 AI 先手。
 - 配置 API 地址。
 - 开始、落子、等待 AI 回复、悔棋、结束。
-- 展示落子记录、最近一步、AI 评分、搜索深度和主变路径。
+- 展示落子记录、最近一步、AI 评分、搜索深度、搜索指标和主变路径。
+- 展示 API 错误、网络错误、AI 思考状态和游戏结束结果。
+- 支持桌面与窄屏响应式布局，主要控件具备基础 aria 标签和可见焦点。
 
 ## API 概览
 
@@ -158,7 +160,7 @@ Invoke-RestMethod -Method Post `
 `search_metrics` 字段包括：
 
 - `nodes`
-- `prunes`
+- `beta_cutoffs`
 - `cache_hits`
 - `cache_stores`
 - `candidate_moves`
@@ -243,42 +245,38 @@ backend/tests/test_ai_benchmark.py
 
 | 痛点 | 证据 | 风险 | 当前处理策略 |
 | --- | --- | --- | --- |
-| README 曾出现编码显示异常 | 普通 PowerShell 读取时中文曾出现乱码，需要显式 UTF-8 读取才可靠 | 新接手者可能误判文档已损坏，无法快速判断进度 | 本次重写为清晰 UTF-8 中文文档，并把运行入口、进度和计划合并到一个入口 |
-| UI 仍是控制台式页面 | C 阶段只完成 Vite、API client、状态 composable | 继续堆功能会让 `App.vue` 变重，后续交互难验收 | D-01 到 D-04 先拆布局、棋盘、棋子、控制面板 |
-| 搜索指标还未产品化展示 | C-09 只把 `search_metrics` 接入 API 和状态 | 用户看不到 AI 为什么慢、搜索是否有效 | D-08 单独做 `SearchInfo`，避免和布局任务混在一起 |
-| AI 预算能力仍未实现 | 当前请求只有 `depth`，搜索是同步完整深度 | 直接加时间限制会引入不完整结果语义 | 后续先做确定性 `node_limit`，再考虑时间预算和迭代加深 |
+| README/TASKS/CLAUDE 需要持续对齐 | E-07 已被列为下一步 | 后续 agent 可能误用旧端口、旧任务状态或旧指标字段 | 文档一致性检查单独成任务，修正 tracked 文档并记录本地 AGENTS 边界 |
+| AI 收益未独立证明 | `d37ac32` 已通过回归，但没有固定局面对比复盘 | 测试通过可能被误读为棋力提升已证明 | 下一轮先做 AI 指标与棋力评估，再决定预算能力和置换表增强 |
+| CI 仍未落地 | 当前 E 阶段门禁主要由本地命令执行 | 人工留痕可能和主干状态分叉 | 下一轮工程化优先把 pytest、build、E2E 和空白检查放进 GitHub Actions |
 | Redis 不是完整分布式协作方案 | Redis session store 不含 per-session lock | 多实例下同一 session 并发写可能冲突 | 当前文档明确边界，生产前再做并发写保护任务 |
-| benchmark 仍偏 smoke | 小棋盘、浅深度、宽松阈值 | 不能证明比赛棋力，只能防明显退化 | 下一轮 AI 优化必须增加固定局面和指标对比 |
-| 协作文档需要持续对齐 | README、CLAUDE、TASKS、任务计划承担不同角色 | 后续 agent 可能误用旧端口、旧前端或旧任务状态 | 文档任务也走审查和 commit/push，D/E 阶段继续做一致性检查 |
+| 可访问性仍是基础级 | D-14 做了 aria/focus 基础，没有 axe 自动审计 | 复杂交互可能仍有辅助技术盲区 | 下一轮补 axe 或等价扫描，并把关键路径纳入自动验收 |
 
 ## 后续计划
 
 后续计划按照三个原则重排：
 
-1. 先处理会阻塞体验验收的结构问题，再处理视觉细节。
-2. 每个任务都绑定可验证证据，避免只靠主观判断。
-3. 每个任务保持最小边界，通过测试和 subagent 审查后再 commit/push。
+1. 先完成 E-07/E-08，把文档一致性和发布前风险说清。
+2. 下一轮先补自动化质量门禁，再扩展 AI、部署和比赛能力。
+3. 每个任务保持最小边界，通过测试和审查记录后再 commit/push。
 
 ### 当前最近任务
 
 | 优先级 | 任务 | 为什么现在做 | 验收证据 |
 | --- | --- | --- | --- |
-| P0 | D-01 页面整体布局 | D 阶段所有 UI 组件需要先落在稳定页面结构中 | 桌面端左棋盘右信息区清晰，窄屏不重叠，E2E 主路径不坏 |
-| P0 | D-02 棋盘组件 | 当前棋盘逻辑仍在主页面，后续棋子、可访问性和响应式都依赖它 | 点击空点能落子，请求中禁用，Playwright 选择器保持可用 |
-| P0 | D-03 棋子组件 | 黑白棋子、最后一步标记是最核心可读性 | 黑白清晰，最后一步明显，移动端不变形 |
-| P0 | D-04 控制面板 | 开始、悔棋、结束是主流程门槛 | 按钮状态与 session、busy、winner 同步 |
-| P1 | D-05 至 D-10 体验组件 | 难度、AI 思考、落子记录、搜索指标、错误和结束态决定产品完成度 | 每个组件连接真实状态或真实 API，不做静态展示 |
-| P1 | D-11 至 D-14 视觉与验收 | 主题、响应式、可访问性和 E2E 是进入 E 阶段前的质量门槛 | 桌面和窄屏无重叠，核心控件可识别，`npm run test:e2e` 通过 |
-| P2 | E-01 至 E-08 收敛 | D 阶段完成后才能做最终回归、审查汇总和风险清单 | pytest、build、E2E、审查文件、commit/push、风险都可追溯 |
+| P0 | E-07 文档一致性检查 | README、CLAUDE、TASKS、任务计划和本地 AGENTS 扫描已发现 README 过期 | tracked 文档不再指向旧 D-01、旧剪枝指标名或旧端口 |
+| P0 | E-08 发布前风险清单 | MVP 是否进入下一轮需要清楚区分已覆盖和未覆盖 | 风险清单列出 AI 收益、subagent、Redis 并发、CI 和部署边界 |
+| P1 | CI 与质量门禁 | 当前回归主要靠本地命令和人工留痕 | GitHub Actions 覆盖 pytest、build、E2E 和空白检查 |
+| P1 | AI 指标与棋力复盘 | `d37ac32` 的收益还缺固定局面对比 | 固定局面记录 nodes、beta_cutoffs、cache_hits、耗时和选点稳定性 |
+| P2 | 部署与比赛能力 | 多实例、部署和比赛体验超出当前 MVP | Redis 并发演练、Docker/公网部署、房间/观战/排行榜分任务进入下一轮 |
 
 ### 不建议现在插入的任务
 
 | 任务 | 暂缓原因 | 适合进入的时机 |
 | --- | --- | --- |
-| 节点预算和时间预算 | 会改变 API 合同与搜索语义，且不阻塞 D 阶段 UI | D-08 搜索信息展示完成后 |
-| 迭代加深 | 需要预算语义、上一完整深度结果和更强测试 | 节点预算稳定后 |
+| 节点预算和时间预算 | 会改变 API 合同与搜索语义，需要先复盘当前迭代加深收益 | AI 指标与棋力复盘完成后 |
+| 置换表 bound 语义 | 会影响搜索正确性和缓存解释，需要更强战术测试 | 固定局面评测稳定后 |
 | 真实 Redis 并发锁 | 当前本地 MVP 不需要多实例同写 | 准备生产或多实例部署前 |
-| CI/CD | 当前优先级低于 UI 产品化和本地验收 | E 阶段完成后作为下一轮工程化任务 |
+| 公网部署和打包 | 会引入环境、CORS、进程管理和发布产物边界 | CI 门禁稳定后 |
 | 比赛系统、房间、排行榜 | 超出当前单机对弈 MVP | 现代 UI 和质量收敛完成后 |
 
 ## 协作流程
@@ -288,7 +286,7 @@ backend/tests/test_ai_benchmark.py
 1. 在 `docs/collaboration/TASKS.md` 或计划记录中确认任务状态和范围。
 2. 只修改当前任务需要的文件，不混入无关重构。
 3. 运行与任务相关的最小测试。
-4. 使用 subagent 做只读审查，审查文件保存到 `docs/collaboration/reviews/`。
+4. 可用时使用 subagent 做只读审查；不可用时执行本地确定性审查，并在 `docs/collaboration/reviews/` 写明边界。
 5. 无 Blocker/Major 后更新留痕。
 6. commit 并 push 到远程 GitHub。
 
@@ -297,7 +295,7 @@ backend/tests/test_ai_benchmark.py
 - 不恢复旧 React / JavaScript 项目源码。
 - 不复制旧静态资源、旧构建配置或旧 README。
 - 新增前端代码必须服务当前 Vue3 + Vite 项目。
-- 打包、公网部署、登录、房间、排行榜、神经网络 AI 不属于当前 MVP。
+- CI、打包、公网部署、登录、房间、排行榜、神经网络 AI 不属于当前 MVP。
 
 ## 项目结构
 
@@ -322,7 +320,19 @@ frontend/
     App.vue
     main.js
     styles.css
+    theme.css
     api/client.js
+    components/
+      AppLayout.vue
+      Board.vue
+      ControlPanel.vue
+      DifficultySelect.vue
+      ErrorBanner.vue
+      GameResult.vue
+      MoveHistory.vue
+      SearchInfo.vue
+      Stone.vue
+      ThinkingIndicator.vue
     composables/useGameState.js
 e2e/
   gobang.spec.js
