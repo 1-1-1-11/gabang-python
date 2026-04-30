@@ -13,13 +13,14 @@
 - API 合同：游戏接口统一返回 `GameSnapshot`，其中包含 `search_metrics`。
 - 前端工程：Vue3 + Vite 已落地，API client、`useGameState` 状态模块、布局、棋盘、棋子、控制面板、难度、AI 思考、落子记录、搜索信息、错误提示、结束状态、主题、响应式和基础可访问性已完成。
 - 验收：当前收敛基线为后端 `112 passed`、Vite build 通过、Playwright E2E `12 passed`。
+- CI：`.github/workflows/quality.yml` 已新增，覆盖后端 pytest、前端 build、Playwright E2E 和最新提交空白检查。
 - 协作：每个最小任务要求自测、审查记录、commit、push 和文档留痕；subagent 不可用时使用本地确定性审查并写明边界。
 
 未完成：
 
 - E-07 文档一致性检查和 E-08 发布前风险清单仍需完成。
 - `d37ac32` 引入的迭代加深、静态搜索和 `beta_cutoffs` 指标已被回归测试覆盖，但棋力收益还没有单独评估。
-- 节点预算、时间预算、真实棋力评测、CI、生产部署和比赛系统还不属于当前 MVP。
+- 节点预算、时间预算、真实棋力评测、生产部署和比赛系统还不属于当前 MVP。
 - Redis 后端只提供基础跨进程会话共享，不提供同一 session 的分布式写锁。
 
 ## 快速启动
@@ -247,7 +248,7 @@ backend/tests/test_ai_benchmark.py
 | --- | --- | --- | --- |
 | README/TASKS/CLAUDE 需要持续对齐 | E-07 已被列为下一步 | 后续 agent 可能误用旧端口、旧任务状态或旧指标字段 | 文档一致性检查单独成任务，修正 tracked 文档并记录本地 AGENTS 边界 |
 | AI 收益未独立证明 | `d37ac32` 已通过回归，但没有固定局面对比复盘 | 测试通过可能被误读为棋力提升已证明 | 下一轮先做 AI 指标与棋力评估，再决定预算能力和置换表增强 |
-| CI 仍未落地 | 当前 E 阶段门禁主要由本地命令执行 | 人工留痕可能和主干状态分叉 | 下一轮工程化优先把 pytest、build、E2E 和空白检查放进 GitHub Actions |
+| CI 初始门禁仍需云端首跑观察 | 24-A 已新增 GitHub Actions workflow，本地同等门禁通过 | GitHub runner 环境可能暴露与本机不同的问题 | 推送后观察首跑结果，再决定是否拆 Linux 兼容、缓存或 artifact 上传 |
 | Redis 不是完整分布式协作方案 | Redis session store 不含 per-session lock | 多实例下同一 session 并发写可能冲突 | 当前文档明确边界，生产前再做并发写保护任务 |
 | 可访问性仍是基础级 | D-14 做了 aria/focus 基础，没有 axe 自动审计 | 复杂交互可能仍有辅助技术盲区 | 下一轮补 axe 或等价扫描，并把关键路径纳入自动验收 |
 
@@ -265,7 +266,7 @@ backend/tests/test_ai_benchmark.py
 | --- | --- | --- | --- |
 | P0 | E-07 文档一致性检查 | README、CLAUDE、TASKS、任务计划和本地 AGENTS 扫描已发现 README 过期 | tracked 文档不再指向旧 D-01、旧剪枝指标名或旧端口 |
 | P0 | E-08 发布前风险清单 | MVP 是否进入下一轮需要清楚区分已覆盖和未覆盖 | 风险清单列出 AI 收益、subagent、Redis 并发、CI 和部署边界 |
-| P1 | CI 与质量门禁 | 当前回归主要靠本地命令和人工留痕 | GitHub Actions 覆盖 pytest、build、E2E 和空白检查 |
+| P1 | CI 首跑与门禁收紧 | 24-A 已新增初始 GitHub Actions workflow | 首跑通过后再考虑 Linux 兼容、缓存优化、artifact 上传和分 job 并行 |
 | P1 | AI 指标与棋力复盘 | `d37ac32` 的收益还缺固定局面对比 | 固定局面记录 nodes、beta_cutoffs、cache_hits、耗时和选点稳定性 |
 | P2 | 部署与比赛能力 | 多实例、部署和比赛体验超出当前 MVP | Redis 并发演练、Docker/公网部署、房间/观战/排行榜分任务进入下一轮 |
 
@@ -295,7 +296,7 @@ backend/tests/test_ai_benchmark.py
 - 不恢复旧 React / JavaScript 项目源码。
 - 不复制旧静态资源、旧构建配置或旧 README。
 - 新增前端代码必须服务当前 Vue3 + Vite 项目。
-- CI、打包、公网部署、登录、房间、排行榜、神经网络 AI 不属于当前 MVP。
+- 打包、公网部署、登录、房间、排行榜、神经网络 AI 不属于当前 MVP。
 
 ## 项目结构
 
@@ -341,6 +342,8 @@ docs/
     TASKS.md
     任务计划.md
     reviews/
+.github/
+  workflows/quality.yml
 package.json
 package-lock.json
 playwright.config.js
