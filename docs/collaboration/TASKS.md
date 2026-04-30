@@ -60,7 +60,7 @@
 | Task 23.D: 精美 UI 与交互体验 | 产品化升级 | 已完成（D-14 已审查 PASS；下一步 E-01） | 组件化棋盘、控制区、状态区、落子记录和 AI 信息展示 | 浏览器验收和 Playwright 主路径通过 |
 | Task 23.E: 复盘、质量收敛与留痕 | 产品化升级 | 已完成（已推送 main） | 汇总测试、审查、commit、push 和下一阶段路线 | E-01 后端全量回归：`112 passed`；E-02 前端构建：通过；E-03 E2E 修复后 `12 passed`；E-04 无未处理 Blocker/Major；E-05/E-06 已推送并核验远端 main 到 `642d624`；E-07/E-08 已推送并核验远端 main 到 `7614b24` |
 | Task 24.A: CI 与质量门禁 | 下一轮质量门禁 | 已完成（workflow 已推送；云端首跑被账户 billing issue 阻塞） | 增加 GitHub Actions，覆盖 pytest、build、E2E 和空白检查 | 本地同等门禁：workflow/骨架 `15 passed`；后端 `113 passed`；build 通过；E2E `12 passed`；远端 main 已核验到 `b2eabe1`；GitHub Actions job 未启动，annotation 为 account locked due to billing issue |
-| Task 24.B: AI 固定局面收益评估 | 下一轮质量门禁 | 已完成（本地记录待提交与远端同步） | 建立 post-`d37ac32` 固定局面评估基线 | `backend/tests/test_ai_quality_evaluation.py`：`2 passed`；后端全量 `115 passed`；build 通过；E2E 重跑后 `12 passed`；记录 nodes、beta_cutoffs、cache_hits、候选数、叶子数、max_depth、选点和参考耗时 |
+| Task 24.B: AI 固定局面收益评估 | 下一轮质量门禁 | 已完成（已推送 main） | 建立 post-`d37ac32` 固定局面评估基线 | `backend/tests/test_ai_quality_evaluation.py`：`2 passed`；后端全量 `115 passed`；build 通过；E2E 重跑后 `12 passed`；远端 main 已核验到 `2a42538` |
 
 > 最新状态（2026-04-30）：Task 23.D 已完成 D-01 页面整体布局、D-02 棋盘组件、D-03 棋子组件、D-04 控制面板、D-05 难度选择、D-06 AI 思考状态、D-07 落子记录、D-08 搜索信息展示、D-09 错误提示、D-10 游戏结束状态、D-11 主题与视觉规范、D-12 浏览器 E2E 主路径、D-13 响应式验收和 D-14 可访问性基础；Task 23.E 已完成 E-01 后端全量回归、E-02 前端构建回归、E-03 E2E 回归、E-04 独立审查汇总、E-05 GitHub 留痕汇总、E-06 下一阶段路线、E-07 文档一致性检查和 E-08 发布前风险清单。E-05/E-06 已推送并核验远端 main 到 `642d624c9733f03dd0d5de362c5125029426298a`；E-07/E-08 已推送并核验远端 main 到 `7614b24333f402b8f5fc9677378d26a08237f2ef`。上表 Task 23.B 历史验收单元格保留 B-01 到 B-06 的详细追溯，后续新增子任务记录在下方独立留痕区，避免继续拉长表格。
 
@@ -457,14 +457,14 @@
   - 下一步：恢复 GitHub Actions 账户/计费状态后 rerun Quality Gates；若通过，可从 AI 收益评估、Redis/部署可信度或前端质量纵深中择一继续。
 
 - 24-B：AI 固定局面收益评估
-  - 状态：已完成（本地记录待提交与远端同步）。
+  - 状态：已完成。
   - 实际分支/worktree：`main` / `D:\Desktop\JOYland\林杯五子棋大赛\gobang-master`。
   - 实现范围：新增 `backend/tests/test_ai_quality_evaluation.py`，用开局、立即胜、必须防、简单威胁和中盘局面锁定当前 post-`d37ac32` 搜索行为；新增 `docs/collaboration/reviews/24B-ai-benefit-evaluation.md` 记录固定局面 metrics 表。
   - 验证方式：`.\.venv\Scripts\python.exe -m pytest backend\tests\test_ai_quality_evaluation.py -q`：`2 passed`；`.\.venv\Scripts\python.exe -m pytest backend\tests -q`：`115 passed`；`npm run build`：通过；`npm run test:e2e` 首轮 webServer 30 秒超时、端口检查无活跃占用，立即重跑后 `12 passed`；`git diff --check` 无空白错误（仅 CRLF 提示）。
   - 审查文件：`docs/collaboration/reviews/24B-ai-benefit-evaluation.md`：PASS，带记录边界。
   - Blocker/Major 处理：无。
-  - 实现 commit：待本轮 24-B 记录提交后补。
-  - push 状态：待本轮提交后推送。
+  - 实现 commit：`2a42538`。
+  - push 状态：已推送 main，远程 `origin/main` 已确认指向 `2a425388f21c9957010f08647d7a9bcef6300d59`。
   - 遗留风险：24-B 建立的是当前行为基线，不证明相对旧提交棋力收益；跨版本收益评估仍需后续独立任务；E2E 首轮 webServer 超时按本地瞬时波动记录在 `.learnings/ERRORS.md`。
   - 下一步：可继续 AI 跨版本收益评估、Redis/部署可信度或前端质量纵深。
 
